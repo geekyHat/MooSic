@@ -15,7 +15,7 @@ export function PwaNotice({core}:{core:AppCore}) {
   if(state.updating)return <div role="alert" className="fixed inset-0 z-[100] flex items-center justify-center bg-panel/95 p-5 text-lg">{it?'Aggiornamento in corso…':'Updating…'}</div>
   if(!state.updateReady||later)return null
   return <aside aria-label={it?'Aggiornamento disponibile':'Update available'} className="fixed bottom-4 left-4 right-4 z-50 mx-auto max-w-lg rounded-xl border border-line bg-panel p-4 shadow-lg">
-    <p>{it?'È disponibile una nuova versione di MusicMaestro.':'A new version of MusicMaestro is available.'}</p>
+    <p>{it?'È disponibile una nuova versione di MooSic.':'A new version of MooSic is available.'}</p>
     {state.error==='busy-tabs'&&<p role="alert" className="my-2 text-sm">{it?'Salva o annulla le bozze e termina le importazioni in tutte le schede aperte.':'Save or discard drafts and finish imports in every open tab.'}</p>}
     <div className="mt-3 flex flex-wrap gap-2"><Button variant="primary" onClick={()=>void service.applyUpdate()}>{it?'Installa aggiornamento':'Install update'}</Button><Button onClick={()=>setLater(true)}>{it?'Più tardi':'Later'}</Button></div>
   </aside>

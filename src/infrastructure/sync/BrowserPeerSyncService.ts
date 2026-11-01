@@ -152,7 +152,7 @@ export class BrowserPeerSyncService extends ObservableStore<PeerSyncSnapshot> im
      signal.throwIfAborted()
      this.incoming=null;this.received=true
      // The local export finishes before verification uses the shared backup adapter.
-     this.receivedFile=new File([blob],'MusicMaestro-peer.zip',{type:'application/zip'});this.send({type:'received'});await this.finish();return
+     this.receivedFile=new File([blob],'MooSic-peer.zip',{type:'application/zip'});this.send({type:'received'});await this.finish();return
    }
    if(message.type!=='restored')throw new SyncError('protocol')
  }

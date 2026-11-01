@@ -20,6 +20,9 @@ test('downloaded ChordPro imports locally on mobile, persists and opens in pract
   await page.setViewportSize({width:375,height:900})
   await page.goto('/')
   await openImport(page)
+  // This dev test isolates offline file imports. Supply browser chrome icons from disk;
+  // the production worker's real offline asset caching is verified by the PWA suite.
+  for(const size of [16,32])await page.route(`**/icons/favicon-${size}x${size}.png`,route=>route.fulfill({path:fileURLToPath(new URL(`../public/icons/favicon-${size}x${size}.png`,import.meta.url)),contentType:'image/png'}))
   await context.setOffline(true)
   await page.getByLabel('Music files',{exact:true}).setInputFiles(downloaded('swinglow.cho'))
   await page.getByLabel('Artist — swinglow.cho',{exact:true}).fill('Traditional')

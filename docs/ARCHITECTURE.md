@@ -1,6 +1,10 @@
 # Architecture
 
-MusicMaestro is a local-first React and TypeScript application, built with Vite. It runs as a static HTTPS site and an installable PWA. User libraries remain in the browser; no application backend or account is required.
+MooSic is a local-first React and TypeScript application, built with Vite. It runs as a static HTTPS site and an installable PWA. User libraries remain in the browser; no application backend or account is required.
+
+Public source: [geekyHat/MooSic](https://github.com/geekyHat/MooSic). The displayed name, logo, installation icons and download filenames use MooSic. Legacy storage names (`musicmaestro-olga`, `musicmaestro-backup-journal`, `mm:*`), lock names, the backup format `musicmaestro-backup`, pairing protocol and worker cache namespace stay stable for compatibility with existing libraries, backups and paired versions. A new hosting origin still needs an explicit backup import or device sync.
+
+The header uses `public/Logo/MooSicLogo.png` on desktop and a compact icon with the MooSic name on mobile; favicons and PWA icons in `public/icons/` come from the supplied `MooSic-icons/web` set. The original icon pack remains available as a source asset, but is excluded from the offline application cache to avoid downloading duplicate icons and native desktop formats. Only the generated root `manifest.webmanifest` configures the installed PWA; its scope and asset paths support a repository subdirectory such as `/MooSic/`.
 
 ## Module boundaries
 

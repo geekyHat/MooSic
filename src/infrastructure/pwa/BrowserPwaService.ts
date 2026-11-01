@@ -10,7 +10,15 @@ export class BrowserPwaService extends ObservableStore<PwaSnapshot> implements P
   private canUpdate=()=>true
   private reloadApproved=false
   private started=false
-  constructor(){super({supported:import.meta.env.PROD&&'serviceWorker' in navigator&&isSecureContext,installed:matchMedia('(display-mode: standalone)').matches||!!(navigator as Navigator&{standalone?:boolean}).standalone,canInstall:false,coreReady:false,ocrReady:false,updateReady:false,updating:false,downloading:false,completed:0,total:0,ocrBytes:0,version:'',error:'',persistent:null})}
+  private installPrompt=(event:Event)=>{event.preventDefault();this.prompt=event as InstallPrompt;this.patch({canInstall:true})}
+  private installed=()=>{this.prompt=null;this.patch({installed:true,canInstall:false})}
+  constructor(){
+    super({supported:import.meta.env.PROD&&'serviceWorker' in navigator&&isSecureContext,installed:matchMedia('(display-mode: standalone)').matches||!!(navigator as Navigator&{standalone?:boolean}).standalone,canInstall:false,coreReady:false,ocrReady:false,updateReady:false,updating:false,downloading:false,completed:0,total:0,ocrBytes:0,version:'',error:'',persistent:null})
+    // The core owns one service for the page lifetime. Capture installation events
+    // before asynchronous data recovery and keep them across React effect restarts.
+    window.addEventListener('beforeinstallprompt',this.installPrompt)
+    window.addEventListener('appinstalled',this.installed)
+  }
   private patch(value:Partial<PwaSnapshot>){this.publish({...this.getSnapshot(),...value})}
   private message(worker:ServiceWorker,type:string,timeout=10000):Promise<Reply>{
     return new Promise((resolve,reject)=>{
@@ -45,9 +53,6 @@ export class BrowserPwaService extends ObservableStore<PwaSnapshot> implements P
     this.canUpdate=canUpdate
     if(this.started)return ()=>{}
     this.started=true
-    const install=(event:Event)=>{event.preventDefault();this.prompt=event as InstallPrompt;this.patch({canInstall:true})}
-    const installed=()=>{this.prompt=null;this.patch({installed:true,canInstall:false})}
-    window.addEventListener('beforeinstallprompt',install);window.addEventListener('appinstalled',installed)
     let interval:ReturnType<typeof setInterval>|undefined
     const check=()=>{if(document.visibilityState==='visible'&&navigator.onLine)void this.checkUpdate()}
     if(this.getSnapshot().supported){
@@ -77,7 +82,7 @@ export class BrowserPwaService extends ObservableStore<PwaSnapshot> implements P
       void navigator.storage?.persisted?.().then(value=>this.patch({persistent:value})).catch(()=>{})
     }
     return ()=>{
-      this.started=false;window.removeEventListener('beforeinstallprompt',install);window.removeEventListener('appinstalled',installed)
+      this.started=false
       navigator.serviceWorker?.removeEventListener('message',this.incoming);navigator.serviceWorker?.removeEventListener('controllerchange',this.controllerChanged)
       window.removeEventListener('online',check);document.removeEventListener('visibilitychange',check);if(interval)clearInterval(interval)
     }

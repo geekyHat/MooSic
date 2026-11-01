@@ -22,7 +22,7 @@ export class IndexedOlgaRepository implements OlgaRepository {
     tx.oncomplete=()=>resolve(db);tx.onabort=()=>reject(tx.error)
    }
    request.onerror=()=>reject(request.error)
-   request.onblocked=()=>reject(new Error('Chiudi le altre schede di MusicMaestro e riprova.'))
+   request.onblocked=()=>reject(new Error('Chiudi le altre schede di MooSic e riprova.'))
   })
  }
  private async transaction<T>(stores:string[],mode:IDBTransactionMode,run:(tx:IDBTransaction,set:(value:T)=>void)=>void):Promise<T>{

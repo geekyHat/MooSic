@@ -2,7 +2,7 @@
 
 I brani sono contenuti statici dell’app; non vengono copiati nel database personale dell’editor. Nessuna libreria del browser o brano di prova entra nella build. Le vecchie voci del catalogo conservano i propri ID.
 
-I quattro nuovi fogli hanno accordi inline ChordPro e ancore visive reali. Gli accompagnamenti semplici sono stati preparati per MusicMaestro, senza riprendere arrangiamenti di registrazioni moderne. I due nuovi TAB sono studi della sola melodia del primo tema, dichiarati come tali; non sono trascrizioni integrali per chitarra polifonica.
+I quattro nuovi fogli hanno accordi inline ChordPro e ancore visive reali. Gli accompagnamenti semplici sono stati preparati per MooSic, senza riprendere arrangiamenti di registrazioni moderne. I due nuovi TAB sono studi della sola melodia del primo tema, dichiarati come tali; non sono trascrizioni integrali per chitarra polifonica.
 
 | Brano / file | Provenienza e scelta editoriale |
 |---|---|

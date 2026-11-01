@@ -1,4 +1,4 @@
-name: Publish MusicMaestro
+name: Publish MooSic
 on:
   push:
     branches: [main]
@@ -6,7 +6,7 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: musicmaestro-pages
+  group: moosic-pages
   cancel-in-progress: false
 jobs:
   build:

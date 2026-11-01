@@ -1,7 +1,7 @@
 import {test,expect,type Page} from '@playwright/test'
 import {scanImage,textPdf} from '../fixtures/scans'
 import {zipSync,strToU8} from 'fflate'
-const base='/MusicMaestro/'
+const base='/MooSic/'
 const song={id:'offline-song',name:'Offline study',artist:'Offline Artist',genre:'',createdAt:1,arrangements:[{id:'arr',name:'Lyrics',kind:'lyrics',tempo:100,bars:1,beatsPerBar:4,chordBars:[{chord:'Am',lyric:'Original offline words'}]}]}
 async function ready(page:Page){await page.goto(base+'#/settings');await expect(page.getByText('Library and reading ready offline',{exact:true})).toBeVisible({timeout:30000});await page.evaluate(()=>navigator.serviceWorker.ready)}
 async function switchVersion(page:Page,value:string){const response=await page.request.post('/__test/version?value='+value);expect(response.ok()).toBe(true)}
@@ -10,10 +10,22 @@ test('subpath manifest, verified precache and native install prompt support a fr
  await page.addInitScript(song=>{if(!localStorage.getItem('mm:user-songs'))localStorage.setItem('mm:user-songs',JSON.stringify([song]))},song)
  await ready(page)
  const manifest=await (await page.request.get(base+'manifest.webmanifest')).json();expect(manifest.start_url).toBe(base);expect(manifest.scope).toBe(base)
+ expect(manifest.name).toBe('MooSic');expect(manifest.short_name).toBe('MooSic')
+ await expect(page).toHaveTitle('MooSic')
+ const logo=page.getByRole('img',{name:'MooSic',exact:true})
+ await expect(logo).toHaveAttribute('src',base+'Logo/MooSicLogo.png')
+ expect(await logo.evaluate((img:HTMLImageElement)=>img.complete&&img.naturalWidth===1304)).toBe(true)
+ const inventory=await (await page.request.get(base+'offline-inventory.json')).json()
+ expect(inventory.core.some((file:{url:string})=>file.url===base+'Logo/MooSicLogo.png')).toBe(true)
+ expect(inventory.core.some((file:{url:string})=>file.url.includes('/MooSic-icons/'))).toBe(false)
  for(const icon of manifest.icons)expect((await page.request.get(base+icon.src)).ok()).toBe(true)
  await page.evaluate(()=>{const event=new Event('beforeinstallprompt');Object.assign(event,{prompt:async()=>{document.body.dataset.prompted='yes'},userChoice:Promise.resolve({outcome:'accepted'})});window.dispatchEvent(event)})
- await page.getByRole('button',{name:'Install MusicMaestro',exact:true}).click();expect(await page.locator('body').getAttribute('data-prompted')).toBe('yes')
+ await page.getByRole('button',{name:'Install MooSic',exact:true}).click();expect(await page.locator('body').getAttribute('data-prompted')).toBe('yes')
  await context.setOffline(true);const cold=await context.newPage();await page.close();await cold.goto(base)
+ const offlineLogo=cold.getByRole('img',{name:'MooSic',exact:true})
+ await expect(offlineLogo).toBeVisible();expect(await offlineLogo.evaluate((img:HTMLImageElement)=>img.complete&&img.naturalWidth===1304)).toBe(true)
+ await cold.setViewportSize({width:375,height:900});await expect(offlineLogo).toHaveJSProperty('naturalWidth',192)
+ await cold.setViewportSize({width:1280,height:720});await expect(offlineLogo).toHaveJSProperty('naturalWidth',1304)
  await expect(cold.locator('.mm-artist').filter({hasText:'Offline Artist'})).toBeVisible()
  await cold.locator('.mm-artist').filter({hasText:'Offline Artist'}).getByRole('button',{name:'Open',exact:true}).click();await cold.locator('.mm-song').getByRole('button',{name:'Open',exact:true}).click()
  await expect(cold.locator('.mm-chord-sheet')).toContainText('Original offline words');await cold.getByRole('button',{name:'Up one semitone',exact:true}).click();await expect(cold.locator('.mm-chord-sheet')).toContainText('A#m')
@@ -118,7 +130,7 @@ test('first QR access prepares the app and resumes real pairing after an install
   // The browser's OS dialog is simulated; the worker, cache, handoff and RTC transfer are real.
   await landing.evaluate(()=>{const event=new Event('beforeinstallprompt');Object.assign(window,{installPromptShown:false});Object.assign(event,{prompt:async()=>{Object.assign(window,{installPromptShown:true})},userChoice:Promise.resolve({outcome:'accepted'})});window.dispatchEvent(event)})
   expect(await landing.evaluate(()=>Reflect.get(window,'installPromptShown'))).toBe(false)
-  await welcome.getByRole('button',{name:'Install MusicMaestro',exact:true}).click()
+  await welcome.getByRole('button',{name:'Install MooSic',exact:true}).click()
   expect(await landing.evaluate(()=>Reflect.get(window,'installPromptShown'))).toBe(true)
   await expect(welcome.getByRole('heading',{name:'Installation confirmed',exact:true})).toHaveCount(0)
   await landing.evaluate(()=>window.dispatchEvent(new Event('appinstalled')))

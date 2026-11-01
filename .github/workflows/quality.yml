@@ -1,4 +1,4 @@
-name: MusicMaestro quality
+name: MooSic quality
 on: [push, pull_request]
 permissions:
   contents: read
@@ -10,8 +10,8 @@ jobs:
     env:
       CI: 'true'
       MM_BROWSERS: chromium,firefox,webkit
-      XDG_RUNTIME_DIR: /github/home/musicmaestro-audio
-      PULSE_SERVER: unix:/github/home/musicmaestro-audio/pulse/native
+      XDG_RUNTIME_DIR: /github/home/moosic-audio
+      PULSE_SERVER: unix:/github/home/moosic-audio/pulse/native
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -25,7 +25,7 @@ jobs:
           apt-get install -y --no-install-recommends pulseaudio
           mkdir -p "$XDG_RUNTIME_DIR"
           chmod 700 "$XDG_RUNTIME_DIR"
-          env -u PULSE_SERVER pulseaudio --start --exit-idle-time=-1 --load="module-null-sink sink_name=musicmaestro"
+          env -u PULSE_SERVER pulseaudio --start --exit-idle-time=-1 --load="module-null-sink sink_name=moosic"
       - run: npm run quality
       - run: npm run check:gates
       - run: npm run test:unit
@@ -38,7 +38,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: musicmaestro-quality-evidence
+          name: moosic-quality-evidence
           path: |
             playwright-report/
             test-results/

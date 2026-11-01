@@ -35,7 +35,7 @@ Update reference images only after reviewing the intended visual change. The neg
 Firefox tests that exercise Web Audio need a working audio backend. The QA container supplies PulseAudio with a private null sink, without mounting the host microphone, audio socket or home directory. To reproduce the visual environment on Linux:
 
 ```sh
-docker build -t musicmaestro-qa:pw1.64.1-audio scripts/qa
+docker build -t moosic-qa:pw1.64.1-audio scripts/qa
 npm run dev -- --host 127.0.0.1 --port 5197 --strictPort
 ```
 
@@ -56,9 +56,9 @@ docker run --rm --init --network=host --shm-size=1g \
   -e PULSE_SERVER=unix:/run/mm-qa/pulse/native \
   -v "$PWD:/work:ro" -v "$MM_ARTIFACTS:/artifacts" \
   -v "$MM_RUNTIME:/run/mm-qa" -w /work \
-  musicmaestro-qa:pw1.64.1-audio sh -c '
+  moosic-qa:pw1.64.1-audio sh -c '
     mkdir -p "$HOME"
-    env -u PULSE_SERVER pulseaudio --start --exit-idle-time=-1 --load="module-null-sink sink_name=musicmaestro"
+    env -u PULSE_SERVER pulseaudio --start --exit-idle-time=-1 --load="module-null-sink sink_name=moosic"
     npm run check:visual-gate && npm run test:visual -- --update-snapshots=none --reporter=list,json
   '
 ```

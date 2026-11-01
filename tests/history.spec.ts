@@ -20,6 +20,32 @@ const artist=(page:Page)=>page.locator('.mm-artist').filter({hasText:'History Ar
 const open=(page:Page,name:string)=>page.locator('.mm-song').filter({has:page.getByRole('heading',{name,exact:true})}).getByRole('button',{name:'Open',exact:true})
 const view=(page:Page,name:string)=>page.getByRole('navigation',{name:'Main navigation',exact:true}).getByRole('button',{name,exact:true})
 
+test('the logo returns to the initial library and Back restores the previous filters or song',async({page})=>{
+ await seed(page);await artist(page).click();await page.getByRole('searchbox').fill('Single')
+ const filtered=page.url(),home=page.getByRole('link',{name:'MooSic — Home',exact:true})
+ await expect(home).toHaveAttribute('href','#/library');await home.click()
+ await expect(page).toHaveURL(/#\/library$/);await expect(page.getByRole('searchbox')).toHaveValue('')
+ await expect(page.locator('.mm-artist')).toHaveCount(catalogue.artists.length+1)
+ await page.goBack();await expect(page).toHaveURL(filtered);await expect(page.getByRole('searchbox')).toHaveValue('Single')
+ await open(page,'Single study').click();await expect(page.locator('.mm-chord-sheet')).toContainText('Original history words')
+ const reading=page.url();await home.click();await expect(page).toHaveURL(/#\/library$/)
+ await expect(page.locator('.mm-artist')).toHaveCount(catalogue.artists.length+1)
+ await page.goBack();await expect(page).toHaveURL(reading);await expect(page.locator('.mm-chord-sheet')).toContainText('Original history words')
+})
+
+test('the logo protects an unsaved editor draft before returning home',async({page})=>{
+ await seed(page);await artist(page).click()
+ await page.locator('.mm-song').filter({hasText:'Single study'}).getByRole('button',{name:'Edit in editor',exact:true}).click()
+ const editorUrl=page.url(),home=page.getByRole('link',{name:'MooSic — Home',exact:true})
+ await page.getByLabel('Song name',{exact:true}).fill('Unsaved logo edit');await home.click()
+ await expect(page.getByRole('dialog')).toBeVisible();await expect(page).toHaveURL(editorUrl)
+ await page.getByRole('button',{name:'Keep editing',exact:true}).click()
+ await expect(page.getByLabel('Song name',{exact:true})).toHaveValue('Unsaved logo edit')
+ await home.click();await page.getByRole('button',{name:'Discard changes',exact:true}).click()
+ await expect(page).toHaveURL(/#\/library$/);await expect(page.locator('.mm-artist')).toHaveCount(catalogue.artists.length+1)
+ expect(await page.evaluate(()=>JSON.parse(localStorage.getItem('mm:user-songs')!)[0].name)).toBe('Single study')
+})
+
 test('a single choice opens directly; browser Back/Forward and reload retain the artist and search',async({page})=>{
   await seed(page)
   await artist(page).click()

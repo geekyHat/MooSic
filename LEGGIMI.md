@@ -1,10 +1,19 @@
-# MusicMaestro 🎸
+# MooSic
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="public/icons/icon-192.png" />
+  <img src="public/Logo/MooSicLogo.png" alt="MooSic — una mucca con le cuffie" width="160" />
+</picture>
 
 App locale per studiare la chitarra nel browser, con catalogo, tablature, notazione standard ed editor di canzoni. Non richiede account o backend applicativo.
 
 Versione applicazione: **0.1.0** · Documentazione aggiornata: **2026-11-01**.
 
-[English](README.md) · [Architettura](docs/ARCHITECTURE.md) · [Test](docs/TESTING.md) · [Sincronizzazione](docs/PEER-SYNC.md)
+[Repository GitHub](https://github.com/geekyHat/MooSic) · [English](README.md) · [Architettura](docs/ARCHITECTURE.md) · [Test](docs/TESTING.md) · [Sincronizzazione](docs/PEER-SYNC.md)
+
+## Sostieni MooSic
+
+Lavoro in IT e sviluppo MooSic nel tempo libero. Se l’app ti è utile, puoi [offrirmi un caffè](https://buymeacoffee.com/scalcagnotm): il tuo sostegno mi aiuta a dedicare più tempo al suo miglioramento. Grazie!
 
 ## Funzionalità disponibili
 
@@ -51,11 +60,11 @@ In **Impostazioni → Sincronizza con un altro dispositivo** creare un codice su
 
 Brani, TAB, arrangiamenti e documenti OLGA vengono uniti senza cancellare i contenuti presenti; le versioni diverse restano come copie numerate. È uno scambio manuale: eliminazioni e preferenze non vengono propagate. [Procedura completa e limiti](docs/PEER-SYNC.md).
 
-**Primo accesso dal QR:** sul telefono senza app compare subito una schermata di benvenuto con installazione e preparazione automatica offline. Nei browser compatibili **Installa MusicMaestro** apre la conferma nativa; su iPhone/iPad compaiono i passaggi per aggiungere l’app alla schermata Home. L’offerta validata resta disponibile fino alla sua scadenza, al massimo dieci minuti: aprendo la nuova icona si riprende il collegamento quando l’archivio è condiviso. Se Safari e l’app usano archivi separati, **Copia invito per riprendere** permette di incollarlo nell’app installata; resta anche la lettura del QR dall’app. Serve l’indirizzo HTTPS pubblicato: localhost sul PC non è un indirizzo di installazione per il telefono. [Flusso e limiti dei browser](docs/PEER-SYNC.md#primo-accesso-dal-qr-e-installazione).
+**Primo accesso dal QR:** sul telefono senza app compare subito una schermata di benvenuto con installazione e preparazione automatica offline. Nei browser compatibili **Installa MooSic** apre la conferma nativa; su iPhone/iPad compaiono i passaggi per aggiungere l’app alla schermata Home. L’offerta validata resta disponibile fino alla sua scadenza, al massimo dieci minuti: aprendo la nuova icona si riprende il collegamento quando l’archivio è condiviso. Se Safari e l’app usano archivi separati, **Copia invito per riprendere** permette di incollarlo nell’app installata; resta anche la lettura del QR dall’app. Serve l’indirizzo HTTPS pubblicato: localhost sul PC non è un indirizzo di installazione per il telefono. [Flusso e limiti dei browser](docs/PEER-SYNC.md#primo-accesso-dal-qr-e-installazione).
 
 ## Installazione, offline e aggiornamenti
 
-Aprire l’indirizzo HTTPS dell’app pubblicata, poi **Impostazioni → Installa MusicMaestro**, oppure usare il comando di installazione del browser. Su iPhone/iPad usare Safari: **Condividi → Aggiungi alla schermata Home**. Il pulsante si attiva quando il browser offre l’installazione. Non occorre un account né un server applicativo: GitHub Pages distribuisce i file, poi ogni utente importa le proprie librerie sul dispositivo. Non aprire `dist/index.html` con `file://`.
+Aprire l’indirizzo HTTPS dell’app pubblicata, poi **Impostazioni → Installa MooSic**, oppure usare il comando di installazione del browser. Su iPhone/iPad usare Safari: **Condividi → Aggiungi alla schermata Home**. Il pulsante si attiva quando il browser offre l’installazione. Non occorre un account né un server applicativo: GitHub Pages distribuisce i file, poi ogni utente importa le proprie librerie sul dispositivo. Non aprire `dist/index.html` con `file://`.
 
 Prima di scollegarsi attendere **Libreria e lettura pronte offline** nelle Impostazioni. Vengono preparate tutte le pagine, diagrammi, trasposizione, autoscroll, editor e importazioni locali, senza doverle aprire una per una. **Scarica strumenti foto/PDF offline** prepara anche OCR italiano/inglese, font e decoder PDF (circa 20 MB). Un download incompleto si può riprovare; lo stato pronto compare soltanto dopo la verifica. Il server di sviluppo non registra un service worker. I campioni audio dell’editor non fanno parte del pacchetto offline.
 
@@ -77,17 +86,17 @@ Il workflow [pages.yml](.github/workflows/pages.yml) verifica tipi, architettura
 
 Per attivarlo:
 
-1. Caricare il progetto sul ramo `main` del proprio repository GitHub. Per una storia pubblica pulita usare un repository nuovo e vuoto, mantenendo privato quello di sviluppo.
+1. Caricare la copia pubblica pulita sul ramo `main` di [geekyHat/MooSic](https://github.com/geekyHat/MooSic), mantenendo privato il repository di sviluppo.
 2. Nel repository selezionare **Settings → Pages → Build and deployment → Source: GitHub Actions**.
-3. Aprire l’URL del deployment **Publish MusicMaestro**. I push successivi aggiorneranno lo stesso indirizzo.
+3. Aprire l’URL del deployment **Publish MooSic**. I push successivi aggiorneranno lo stesso indirizzo.
 
-La copia pubblica parte da una storia Git nuova e non ha un remoto configurato. La [guida alla pubblicazione](docs/PUBLISHING.md) spiega come collegare un repository vuoto e attivare Pages. L’indirizzo HTTPS effettivo compare dopo il deployment riuscito: non è un sito già pubblicato. Mantenere stabile l’indirizzo di produzione. Localhost, Pages e un dominio personalizzato hanno dati locali distinti: per trasferirli usare il backup completo. [Requisiti ufficiali del workflow Pages](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages).
+Il repository pubblico è [geekyHat/MooSic](https://github.com/geekyHat/MooSic). La [guida alla pubblicazione](docs/PUBLISHING.md) spiega come caricare la copia pulita e attivare Pages. Con la configurazione predefinita di Pages l’indirizzo di installazione sarà **https://geekyhat.github.io/MooSic/** dopo il deployment riuscito; questo non conferma che il sito sia già online. Mantenere stabile l’indirizzo di produzione. Localhost, Pages e un dominio personalizzato hanno dati locali distinti: per trasferirli usare il backup completo. [Requisiti ufficiali del workflow Pages](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages).
 
-Per un altro hosting statico HTTPS distribuire tutto `dist/`, inclusi `sw.js`, manifest, icone, `assets/` e `scan-assets/`. Per una sottocartella: `MM_BASE_PATH='/MusicMaestro/' npm run build`. Evitare cache HTTP lunghe per `index.html` e `sw.js`; gli asset con hash possono essere immutabili. La navigazione con hash non richiede riscritture lato server.
+Per un altro hosting statico HTTPS distribuire tutto `dist/`, inclusi `sw.js`, manifest, icone, `assets/` e `scan-assets/`. Per una sottocartella: `MM_BASE_PATH='/MooSic/' npm run build`. Evitare cache HTTP lunghe per `index.html` e `sw.js`; gli asset con hash possono essere immutabili. La navigazione con hash non richiede riscritture lato server.
 
 ```bash
 npm run check:offline   # dopo la build: verifica file e hash della cache
-npm run test:pwa        # crea due build e prova offline/aggiornamenti sotto /MusicMaestro/
+npm run test:pwa        # crea due build e prova offline/aggiornamenti sotto /MooSic/
 ```
 
 ## Navigazione alfabetica della libreria

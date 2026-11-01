@@ -7,6 +7,6 @@
 To regenerate (qpdf required only for fixture generation):
 
 ```sh
-node --import ./tests/unit/register.js --input-type=module -e 'import { writeFileSync } from "node:fs"; import { textPdf } from "./tests/fixtures/scans.ts"; writeFileSync("/tmp/musicmaestro-scan-source.pdf", textPdf())'
-qpdf --encrypt scan-test-password owner-test-password 256 -- /tmp/musicmaestro-scan-source.pdf tests/fixtures/scans/password-protected.pdf
+node --import ./tests/unit/register.js --input-type=module -e 'import { writeFileSync } from "node:fs"; import { textPdf } from "./tests/fixtures/scans.ts"; writeFileSync("/tmp/moosic-scan-source.pdf", textPdf())'
+qpdf --encrypt scan-test-password owner-test-password 256 -- /tmp/moosic-scan-source.pdf tests/fixtures/scans/password-protected.pdf
 ```

@@ -1,4 +1,4 @@
-# MusicMaestro — Plugin and Adapter Manual
+# MooSic — Plugin and Adapter Manual
 
 Application: **0.1.0** · Plugin API: **1** · Updated: **2026-11-01**
 

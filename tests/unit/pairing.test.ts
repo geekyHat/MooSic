@@ -5,7 +5,7 @@ import {LazyPeerSyncService} from '../../src/application/sync/LazyPeerSyncServic
 import {initialSync,type PeerSyncService} from '../../src/application/sync/PeerSyncService.ts'
 const offer=()=>({version:1 as const,kind:'offer' as const,id:crypto.randomUUID(),expires:Date.now()+PAIRING_LIFETIME,sdp:'v=0\r\na=fingerprint:sha-256 AA:BB:CC:DD\r\n'})
 test('pairing QR/code and fragment URL roundtrip without sending library data',()=>{
- const value=offer(),code=encodePairing(value),url='https://example.invalid/musicraft/#/settings?sync='+code
+ const value=offer(),code=encodePairing(value),url='https://example.invalid/MooSic/#/settings?sync='+code
  assert.deepEqual(decodePairing(code),value);assert.deepEqual(decodePairing(url),value);assert.equal(new URL(url).search,'');assert.equal(extractPairing(url),code)
  assert.throws(()=>decodePairing('not a code'));assert.throws(()=>decodePairing('MM-SYNC1.'+'A'.repeat(20001)))
 })

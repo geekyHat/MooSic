@@ -48,7 +48,7 @@ test('multi-page text PDF uses its text layer, keeps every page and allows going
   await expect(page.getByText('Text read directly from PDF',{exact:true})).toBeVisible()
   expect(assets).toEqual([])
   await page.getByRole('button',{name:'Next page',exact:true}).click()
-  await expect(page.getByRole('img')).toHaveAttribute('alt',/Page 2/)
+  await expect(page.getByRole('img',{name:/Page 2/})).toHaveAttribute('alt',/Page 2/)
   await page.getByRole('button',{name:'Previous page',exact:true}).click()
   await page.screenshot({path:testInfo.outputPath('scan-pdf-review.png'),fullPage:true})
   await page.getByRole('button',{name:'Review import',exact:true}).click()

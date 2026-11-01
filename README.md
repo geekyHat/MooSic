@@ -1,10 +1,19 @@
-# MusicMaestro 🎸
+# MooSic
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="public/icons/icon-192.png" />
+  <img src="public/Logo/MooSicLogo.png" alt="MooSic — a cow wearing headphones" width="160" />
+</picture>
 
 A local-first browser app for practising guitar, with a filterable library, tablature, standard notation and a song editor. No account or application backend is required.
 
 Application version: **0.1.0** · Documentation updated: **2026-11-01**.
 
-[Italian guide](LEGGIMI.md) · [Architecture](docs/ARCHITECTURE.md) · [Testing](docs/TESTING.md) · [Device sync](docs/PEER-SYNC.md)
+[GitHub repository](https://github.com/geekyHat/MooSic) · [Italian guide](LEGGIMI.md) · [Architecture](docs/ARCHITECTURE.md) · [Testing](docs/TESTING.md) · [Device sync](docs/PEER-SYNC.md)
+
+## Support MooSic
+
+I work in IT and develop MooSic in my spare time. If you enjoy the app, [buy me a coffee](https://buymeacoffee.com/scalcagnotm): your support helps me dedicate more time to improving it. Thank you!
 
 ## Available now
 
@@ -45,11 +54,11 @@ The bundled repertoire contains ten studies: Ode to Joy, Für Elise, Greensleeve
 
 **Settings → Sync with another device** exchanges two pairing codes via link, QR, camera, QR image or copy/paste. Compare the verification code and confirm on both devices. WebRTC transfers the libraries directly over an encrypted connection on the same Wi-Fi/LAN, without an account, signaling server, STUN or TURN. Received files are verified before an explicit merge. Songs, TAB, arrangements and OLGA documents are included; identical copies are skipped and different versions are retained as numbered copies. This is manual snapshot exchange: deletions and device preferences are not replicated. [Instructions, privacy and network limits](docs/PEER-SYNC.md).
 
-**First QR access:** a phone without the app opens a welcome screen with installation, automatic offline preparation and a way to resume pairing. Supporting browsers show an **Install MusicMaestro** button that opens their confirmation dialog; iPhone/iPad users get Home Screen instructions. A validated offer is retained until its ten-minute expiry, so launching the new app icon resumes pairing when storage is shared. Copy/paste and scanning inside the installed app cover platforms with isolated storage. The QR must use the published HTTPS URL; localhost is not a remote installation address. [First-install flow and browser limits](docs/PEER-SYNC.md#primo-accesso-dal-qr-e-installazione).
+**First QR access:** a phone without the app opens a welcome screen with installation, automatic offline preparation and a way to resume pairing. Supporting browsers show an **Install MooSic** button that opens their confirmation dialog; iPhone/iPad users get Home Screen instructions. A validated offer is retained until its ten-minute expiry, so launching the new app icon resumes pairing when storage is shared. Copy/paste and scanning inside the installed app cover platforms with isolated storage. The QR must use the published HTTPS URL; localhost is not a remote installation address. [First-install flow and browser limits](docs/PEER-SYNC.md#primo-accesso-dal-qr-e-installazione).
 
 ## Install, offline, updates and full backup
 
-Open the HTTPS production URL, then **Settings → Install MusicMaestro**, or the browser’s install menu. On iPhone/iPad use Safari’s **Share → Add to Home Screen**. Installation support depends on the browser; a native prompt is shown only when offered by the browser. No account or application server is needed: GitHub Pages serves the app files, and each user imports their own libraries locally. Do not open `dist/index.html` as a `file://` URL.
+Open the HTTPS production URL, then **Settings → Install MooSic**, or the browser’s install menu. On iPhone/iPad use Safari’s **Share → Add to Home Screen**. Installation support depends on the browser; a native prompt is shown only when offered by the browser. No account or application server is needed: GitHub Pages serves the app files, and each user imports their own libraries locally. Do not open `dist/index.html` as a `file://` URL.
 
 Wait for **Library and reading ready offline** in Settings before disconnecting. All application pages, diagrams, transpose, autoscroll, editing and local file/OLGA imports are cached. **Download offline photo/PDF tools** additionally prepares English/Italian OCR and PDF fonts/decoders (about 20 MB). A cold launch works without visiting every page first. Failed pack downloads can be retried; they are never labelled ready until complete. Development mode deliberately has no service worker. Editor audio samples are outside the offline pack.
 
@@ -63,17 +72,17 @@ The versioned backup format has CRC and source SHA-256 checks. Bounds: 256 MB ZI
 
 The workflow [pages.yml](.github/workflows/pages.yml) runs validation, library/sync/backup/history tests, real offline/update tests and a production build on pushes to `main` (or manual dispatch), then publishes **only `dist/`**. It derives the root/subdirectory URL from Pages metadata. Imported libraries and backups never enter the deployment. To activate it:
 
-1. Push the project to the `main` branch of your GitHub repository. For a clean public history, use a new, empty repository rather than publishing the private development repository.
+1. Push the clean public copy to `main` in [geekyHat/MooSic](https://github.com/geekyHat/MooSic), keeping the development repository private.
 2. In the repository, choose **Settings → Pages → Build and deployment → Source: GitHub Actions**.
-3. Open the URL from the **Publish MusicMaestro** deployment. Later pushes update that same installation URL.
+3. Open the URL from the **Publish MooSic** deployment. Later pushes update that same installation URL.
 
-The public copy starts with a fresh local history and no remote configured. Follow the [publication guide](docs/PUBLISHING.md) to connect an empty GitHub repository and enable Pages. The actual HTTPS URL appears after a successful deployment; do not assume a site is already live. Keep the production origin stable: localhost, Pages and a custom domain have separate local storage. Export/import a full backup to move data between them. See [GitHub’s workflow requirements](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages).
+The public repository is [geekyHat/MooSic](https://github.com/geekyHat/MooSic). Follow the [publication guide](docs/PUBLISHING.md) to push the clean copy and enable Pages. With the default Pages configuration the installation URL will be **https://geekyhat.github.io/MooSic/** after a successful deployment; this does not confirm that the site is already live. Keep the production origin stable: localhost, Pages and a custom domain have separate local storage. Export/import a full backup to move data between them. See [GitHub’s workflow requirements](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages).
 
-For another static HTTPS host, serve the complete `dist/` directory including `sw.js`, `manifest.webmanifest`, icons, `assets/` and `scan-assets/`. Build a subdirectory deployment with `MM_BASE_PATH='/MusicMaestro/' npm run build`. Avoid long HTTP caching for `index.html` and `sw.js`; immutable hashed assets can be cached. Hash navigation needs no server rewrite.
+For another static HTTPS host, serve the complete `dist/` directory including `sw.js`, `manifest.webmanifest`, icons, `assets/` and `scan-assets/`. Build a subdirectory deployment with `MM_BASE_PATH='/MooSic/' npm run build`. Avoid long HTTP caching for `index.html` and `sw.js`; immutable hashed assets can be cached. Hash navigation needs no server rewrite.
 
 ```bash
 npm run check:offline   # after build: verify every precache file and digest
-npm run test:pwa        # builds two fixtures and tests the real worker under /MusicMaestro/
+npm run test:pwa        # builds two fixtures and tests the real worker under /MooSic/
 ```
 
 ## Free lyrics editor

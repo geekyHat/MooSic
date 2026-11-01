@@ -14,16 +14,15 @@ export function pwa() {
   let base='/'
   const appBuild=process.env.MM_BUILD_ID??process.env.GITHUB_SHA??Date.now().toString(36)
   return {
-    name:'musicmaestro-pwa',apply:'build',enforce:'post',
+    name:'moosic-pwa',apply:'build',enforce:'post',
     config(){return {define:{__APP_BUILD__:JSON.stringify(appBuild)}}},
     configResolved(config){base=config.base},
     generateBundle: {
       order:'post',
       handler(_options,bundle) {
-        const manifest={id:base,name:'MusicMaestro',short_name:'MusicMaestro',description:'Your local song library, chords and tablature',lang:'it',start_url:base,scope:base,display:'standalone',background_color:'#f7f6f2',theme_color:'#2149e8',categories:['music','education'],icons:[
+        const manifest={id:base,name:'MooSic',short_name:'MooSic',description:'Your local song library, chords and tablature',lang:'it',start_url:base,scope:base,display:'standalone',background_color:'#fffdf8',theme_color:'#111111',categories:['music','education'],icons:[
           {src:'icons/icon-192.png',sizes:'192x192',type:'image/png',purpose:'any'},
           {src:'icons/icon-512.png',sizes:'512x512',type:'image/png',purpose:'any'},
-          {src:'icons/maskable-512.png',sizes:'512x512',type:'image/png',purpose:'maskable'},
         ]}
         this.emitFile({type:'asset',fileName:'manifest.webmanifest',source:JSON.stringify(manifest)})
         const files=Object.entries(bundle).filter(([name])=>!name.endsWith('.map')&&!name.endsWith('.txt')&&!name.endsWith('.json')).map(([name,item])=>({name,bytes:Buffer.from(item.type==='chunk'?item.code:item.source)}))
@@ -32,7 +31,7 @@ export function pwa() {
         // Some static servers mark .gz files as HTTP Content-Encoding: gzip.
         // Fetch then exposes the decoded payload; both representations have a fixed digest.
         const inventory=[...unique.values()].sort((a,b)=>a.name.localeCompare(b.name)).map(({name,bytes})=>({url:base+name,sha256:sha(bytes),bytes:bytes.length,...(name.endsWith('.gz')?{decodedSha256:sha(gunzipSync(bytes))}:{})}))
-        const core=inventory.filter(file=>!file.url.includes('/scan-assets/')&&!file.url.includes('/sounds/'))
+        const core=inventory.filter(file=>!file.url.includes('/scan-assets/')&&!file.url.includes('/sounds/')&&!file.url.includes('/icons/MooSic-icons/'))
         const ocr=inventory.filter(file=>file.url.includes('/scan-assets/'))
         const version=sha(JSON.stringify(inventory)).slice(0,16)
         const config={base,version,appBuild,core,ocr}

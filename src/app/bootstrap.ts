@@ -30,6 +30,7 @@ import guitarTransport from '@/transports/guitar'
 import metronomeTransport from '@/transports/metronome'
 
 export async function bootstrap():Promise<AppCore>{
+  const pwa=new BrowserPwaService()
   const invitation=await syncInvitation(window)
   if(invitation.resume)history.replaceState(history.state,'',`${import.meta.env.BASE_URL}#/settings`)
   const repository=new IndexedOlgaRepository()
@@ -60,6 +61,6 @@ export async function bootstrap():Promise<AppCore>{
   window.addEventListener('popstate',receiveInvitation)
   window.addEventListener('hashchange',receiveInvitation)
   receiveInvitation()
-  core=await composeCore([guitarPlugin,ukuleleReserved,abcParser,tabRenderer,notationRenderer,metronomeTransport,guitarTransport,publicDomainContent,userContent,olgaContent(olga),localStorePlugin,defaultTheme,darkTheme],{songs,olga,scan,pwa:new BrowserPwaService(),backup,sync,settings:new SettingsService(new LocalSettingsRepository()),language:navigator.language??'en'})
+  core=await composeCore([guitarPlugin,ukuleleReserved,abcParser,tabRenderer,notationRenderer,metronomeTransport,guitarTransport,publicDomainContent,userContent,olgaContent(olga),localStorePlugin,defaultTheme,darkTheme],{songs,olga,scan,pwa,backup,sync,settings:new SettingsService(new LocalSettingsRepository()),language:navigator.language??'en'})
   return core
 }

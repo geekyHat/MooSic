@@ -1,7 +1,7 @@
 import '@/app.css'
 import type { AppCore } from '@/core/plugin/context-impl'
 import type { ArrangementKind } from '@/core/plugin/types'
-import type { AppView, LibraryLocation } from '@/domain/navigation/location'
+import { appLocation,type AppView,type LibraryLocation } from '@/domain/navigation/location'
 import { BrowserNavigation } from '@/infrastructure/navigation/BrowserNavigation'
 import { useAppSnapshot } from '@/shared/hooks/useAppSnapshot'
 import { NavigationGuard } from '@/shared/navigation/NavigationGuard'
@@ -33,6 +33,7 @@ function AppShell({core}:{core:AppCore}){
  const changeLibrary=(patch:Partial<LibraryLocation>,replace=false)=>{rememberScroll();const latest=navigation.getSnapshot().route;navigation.navigate({...latest,library:{...latest.library,...patch}},{replace,preserveScroll:replace})}
  const currentPractice=()=>({songId:core.currentSongId,versionId:core.currentVersionId,kind:core.currentSongId?core.currentArrangement:null,display:core.currentSongId===route.practice.songId&&core.currentArrangement===route.practice.kind?route.practice.display:null})
  const navigate=(next:View)=>guard.request(()=>{rememberScroll();navigation.navigate({...route,view:next,editorSongId:next==='editor'?null:route.editorSongId,practice:next==='practice'?currentPractice():route.practice})})
+ const goHome=()=>guard.request(()=>{rememberScroll();navigation.navigate(appLocation())})
  const openSong=(songId:string,versionId:string,kind:ArrangementKind)=>{
    rememberScroll();navigation.navigate({...route,view:'practice',practice:{songId,versionId,kind,display:null}})
  }
@@ -68,7 +69,7 @@ function AppShell({core}:{core:AppCore}){
  const loading=<p role="status">{core.locale==='it'?'Caricamento…':'Loading…'}</p>
  return <><div className="mm-shell flex h-full min-w-0 flex-col">
    <a className="mm-skip-link" href="#main-content" onClick={event=>{event.preventDefault();main.current?.focus()}}>{core.t('nav.skip')}</a>
-   <AppHeader core={core} view={view} onNavigate={navigate}/>
+   <AppHeader core={core} view={view} onNavigate={navigate} onHome={goHome}/>
    <main ref={main} onScroll={rememberScroll} id="main-content" tabIndex={-1} className="mm-main min-h-0 min-w-0 flex-1 overflow-auto p-5 max-narrow:p-3">
      <ChunkBoundary key={view} locale={core.locale}><Suspense fallback={loading}><div data-navigation-page={view}>
        {view==='library'&&<Library core={core} location={route.library} onLocationChange={changeLibrary} onOpen={openSong} onEdit={editSong}/>}

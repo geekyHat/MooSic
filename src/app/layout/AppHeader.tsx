@@ -4,12 +4,15 @@ const NAV_BTN_BASE = 'min-h-11 border-0 px-3.5 py-1.75 rounded-lg cursor-pointer
 const NAV_BTN_INACTIVE = `${NAV_BTN_BASE} bg-transparent text-muted hover:bg-accent/10 hover:text-ink`
 const NAV_BTN_ACTIVE = `${NAV_BTN_BASE} bg-accent/15 text-accent font-semibold`
 
-export function AppHeader({core,view,onNavigate}:{core:AppCore;view:View;onNavigate:(view:View)=>void}){const t=core.t;return (      <header className="mm-header flex shrink-0 items-center gap-3.5 bg-panel border-b border-line px-4.5 py-2.5 max-narrow:grid max-narrow:grid-cols-[minmax(0,1fr)_auto] max-narrow:gap-2 max-narrow:px-3 max-narrow:py-2">
-        <div className="mm-logo flex min-w-0 items-center gap-2 text-lg font-bold">
-          <span>🎸</span>
-          <span>{t('app.name')}</span>
-        </div>
-        <nav aria-label={t('nav.main')} className="mm-nav flex min-w-0 flex-1 gap-1 max-narrow:order-3 max-narrow:col-span-2 max-narrow:grid max-narrow:grid-cols-4">
+export function AppHeader({core,view,onNavigate,onHome}:{core:AppCore;view:View;onNavigate:(view:View)=>void;onHome:()=>void}){const t=core.t;return (      <header className="mm-header shrink-0 items-center bg-panel border-b border-line px-6.5 py-2.5 max-narrow:px-5 max-narrow:py-2">
+        <a className="mm-logo" href="#/library" aria-label={`${t('app.name')} — ${t('nav.home')}`} title={t('nav.home')} onClick={event=>{if(event.button===0&&!event.metaKey&&!event.ctrlKey&&!event.shiftKey&&!event.altKey){event.preventDefault();onHome()}}}>
+          <picture>
+            <source media="(max-width: 45rem)" srcSet={`${import.meta.env.BASE_URL}icons/icon-192.png`} />
+            <img src={`${import.meta.env.BASE_URL}Logo/MooSicLogo.png`} alt={t('app.name')} width={1304} height={1206} className="mm-brand-logo" fetchPriority="high" />
+          </picture>
+          <span className="mm-brand-name" aria-hidden="true">{t('app.name')}</span>
+        </a>
+        <nav aria-label={t('nav.main')} className="mm-nav flex min-w-0 gap-1">
           {(
             [
               ['library', 'nav.library'],
