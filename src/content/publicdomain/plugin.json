@@ -1,0 +1,9 @@
+{
+  "id": "content-publicdomain",
+  "type": "content",
+  "name": { "en": "Public domain catalog", "it": "Catalogo pubblico dominio" },
+  "description": "Built-in public-domain pieces (classical & folk) in ABC.",
+  "version": "1.0.0",
+  "apiVersion": 1,
+  "permissions": []
+}

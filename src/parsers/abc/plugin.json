@@ -1,0 +1,9 @@
+{
+  "id": "parser-abc",
+  "type": "parser",
+  "name": { "en": "ABC notation", "it": "Notazione ABC" },
+  "description": "Parses ABC music notation into the Score Model.",
+  "version": "1.0.0",
+  "apiVersion": 1,
+  "permissions": []
+}

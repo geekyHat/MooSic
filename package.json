@@ -1,0 +1,54 @@
+{
+  "name": "musicmaestro",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "typecheck": "tsc --noEmit --noUnusedLocals --noUnusedParameters",
+    "lint": "node scripts/lint.mjs",
+    "test:unit": "node --import ./tests/unit/register.js --test --test-isolation=none tests/unit/*.test.ts tests/unit/*.test.tsx",
+    "test:browser": "playwright test",
+    "test:visual": "playwright test --config playwright.visual.config.ts",
+    "test:production": "playwright test --config playwright.production.config.ts",
+    "check:architecture": "node scripts/architecture.mjs",
+    "check:bundle": "node scripts/bundle-gate.mjs",
+    "check:offline": "node scripts/check-offline.mjs",
+    "test:pwa": "playwright test --config playwright.pwa.config.ts",
+    "quality": "npm run typecheck && npm run lint && npm run check:architecture && npm run test:unit && npm run build && npm run check:bundle",
+    "check:visual-gate": "node scripts/check-visual-gate.mjs",
+    "check:gates": "node scripts/check-gates.mjs"
+  },
+  "dependencies": {
+    "@tesseract.js-data/eng": "1.0.0",
+    "@tesseract.js-data/ita": "1.0.0",
+    "abcjs": "^6.4.4",
+    "fflate": "^0.8.3",
+    "jsqr": "^1.4.0",
+    "pdfjs-dist": "6.4.299",
+    "qrcode": "^1.5.4",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "tesseract.js": "7.0.0"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
+    "@playwright/test": "^1.64.1",
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/node": "^26.6.5",
+    "@types/qrcode": "^1.5.6",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "@vitejs/plugin-react": "^4.5.0",
+    "tailwindcss": "^4.3.3",
+    "typescript": "~5.8.3",
+    "vite": "^6.3.5"
+  },
+  "engines": {
+    "node": ">=24.0.0"
+  }
+}

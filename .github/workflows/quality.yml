@@ -1,0 +1,46 @@
+name: MusicMaestro quality
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    container: mcr.microsoft.com/playwright:v1.64.1-noble
+    timeout-minutes: 20
+    env:
+      CI: 'true'
+      MM_BROWSERS: chromium,firefox,webkit
+      XDG_RUNTIME_DIR: /github/home/musicmaestro-audio
+      PULSE_SERVER: unix:/github/home/musicmaestro-audio/pulse/native
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci --include=dev
+      - name: Virtual audio backend for real Web Audio checks
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends pulseaudio
+          mkdir -p "$XDG_RUNTIME_DIR"
+          chmod 700 "$XDG_RUNTIME_DIR"
+          env -u PULSE_SERVER pulseaudio --start --exit-idle-time=-1 --load="module-null-sink sink_name=musicmaestro"
+      - run: npm run quality
+      - run: npm run check:gates
+      - run: npm run test:unit
+      - run: npm test
+      - run: npm test
+      - run: npm run test:production
+      - run: npm run test:visual
+      - run: npm run check:visual-gate
+      - run: npm run test:visual
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: musicmaestro-quality-evidence
+          path: |
+            playwright-report/
+            test-results/
+            dist/bundle-report.json
+          retention-days: 14

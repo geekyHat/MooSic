@@ -1,0 +1,60 @@
+# Dependencies and generated application files
+node_modules/
+/dist/
+*.tsbuildinfo
+
+# Local configuration and editor state
+*.local
+.DS_Store
+.env
+.env.*
+!.env.example
+!.env.*.example
+.idea/
+.vscode/
+.agents/
+.codex/
+.aws/
+*.swp
+*.swo
+*~
+*.orig
+*.rej
+
+# Test output and caches (keep test sources and visual reference images)
+playwright-report/
+test-results/
+blob-report/
+coverage/
+.cache/
+.qa/
+*.log
+
+# Private planning notes and historical development reports
+/TODO*.md
+/docs/TODO*.md
+/docs/refactor-todos.json
+/docs/REFACTOR-PLAN.md
+/docs/IMPLEMENTATION-RESULT.md
+/docs/brainstorm-feasibility.md
+/docs/M15-VERIFICATION-GUIDE.md
+/docs/M22-LYRIC-SHEET.md
+/docs/OLGA-PRACTICE-ANALYSIS.md
+/docs/qa/
+
+# One-off debugging and capture utilities
+/test-editor*.ts
+/scripts/capture-qa.mjs
+/scripts/capture-lyrics-qa.mjs
+/scripts/profile-editor.mjs
+/scripts/organize-imports.mjs
+
+# Personal libraries, backups and credentials
+/backups/
+/imports/
+/*.zip
+/OLGA Archive*/
+*.pem
+*.key
+*.p12
+*.pfx

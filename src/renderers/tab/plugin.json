@@ -1,0 +1,9 @@
+{
+  "id": "renderer-tab",
+  "type": "renderer",
+  "name": { "en": "Tabs", "it": "Tablatura" },
+  "description": "Six-line (or N-line) tablature with karaoke highlight.",
+  "version": "1.0.0",
+  "apiVersion": 1,
+  "permissions": []
+}

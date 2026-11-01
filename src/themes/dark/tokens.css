@@ -1,0 +1,16 @@
+:root {
+  --mm-bg: #101216;
+  --mm-panel: #181b21;
+  --mm-ink: #e7e9ee;
+  --mm-muted: #9aa0aa;
+  --mm-accent: #6b9fff;
+  --mm-accent-ink: #0b1020;
+  --mm-border: #2a2f38;
+  --mm-score-ink: #dfe3ea;
+  --mm-tab-line: #c9ced8;
+  --mm-tab-ink: #dfe3ea;
+  --mm-note-active: #6b9fff;
+  --mm-note-ok: #34d399;
+  --mm-note-bad: #f87171;
+  --mm-warn: #fbbf24;
+}

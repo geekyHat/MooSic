@@ -1,0 +1,15 @@
+{
+  "id": "instrument-guitar",
+  "type": "instrument",
+  "name": { "en": "Guitar (6-string, standard)", "it": "Chitarra (6 corde, standard)" },
+  "description": "Standard 6-string guitar, EADGBE tuning.",
+  "version": "1.0.0",
+  "apiVersion": 1,
+  "permissions": [],
+  "config": {
+    "defaults": { "fretCount": 20 },
+    "schema": {
+      "fretCount": { "type": "integer", "min": 12, "max": 24, "ui": "slider" }
+    }
+  }
+}

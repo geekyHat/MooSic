@@ -1,0 +1,9 @@
+{
+  "id": "renderer-notation",
+  "type": "renderer",
+  "name": { "en": "Standard notation", "it": "Notazione standard" },
+  "description": "Five-line staff notation rendered by abcjs (ABC sources).",
+  "version": "1.0.0",
+  "apiVersion": 1,
+  "permissions": []
+}

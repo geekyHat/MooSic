@@ -1,0 +1,313 @@
+{
+  "artists": [
+    {
+      "meta": {
+        "id": "beethoven",
+        "name": "L. van Beethoven"
+      },
+      "songs": [
+        {
+          "meta": {
+            "id": "ode-to-joy",
+            "title": "Ode to Joy",
+            "composer": "L. van Beethoven",
+            "genre": "classical",
+            "difficulty": "easy",
+            "tags": [
+              "classical",
+              "symphony"
+            ]
+          },
+          "versions": [
+            {
+              "id": "v1",
+              "name": "Standard",
+              "arrangements": [
+                {
+                  "kind": "tabs",
+                  "file": "ode-to-joy.abc"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "meta": {
+            "id": "fur-elise",
+            "title": "Für Elise",
+            "composer": "L. van Beethoven",
+            "genre": "classical",
+            "difficulty": "medium",
+            "tags": [
+              "classical"
+            ]
+          },
+          "versions": [
+            {
+              "id": "v1",
+              "name": "Standard",
+              "arrangements": [
+                {
+                  "kind": "tabs",
+                  "file": "fur-elise.abc"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "meta": {
+        "id": "traditional",
+        "name": "Traditional"
+      },
+      "songs": [
+        {
+          "meta": {
+            "id": "greensleeves",
+            "title": "Greensleeves",
+            "composer": "Traditional (English folk)",
+            "genre": "folk",
+            "difficulty": "easy",
+            "tags": [
+              "folk",
+              "english"
+            ]
+          },
+          "versions": [
+            {
+              "id": "v1",
+              "name": "Standard",
+              "arrangements": [
+                {
+                  "kind": "tabs",
+                  "file": "greensleeves.abc"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "meta": {
+            "id": "bella-ciao",
+            "title": "Bella Ciao",
+            "composer": "Traditional (Italian folk)",
+            "genre": "folk",
+            "difficulty": "easy",
+            "tags": [
+              "folk",
+              "italian"
+            ]
+          },
+          "versions": [
+            {
+              "id": "v1",
+              "name": "Standard",
+              "arrangements": [
+                {
+                  "kind": "tabs",
+                  "file": "bella-ciao.abc"
+                },
+                {
+                  "kind": "lyrics",
+                  "file": "bella-ciao-lyrics.abc"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "meta": {
+            "id": "frere-jacques",
+            "title": "Frère Jacques",
+            "composer": "Traditional",
+            "genre": "folk",
+            "difficulty": "easy",
+            "tags": [
+              "folk",
+              "starter"
+            ]
+          },
+          "versions": [
+            {
+              "id": "v1",
+              "name": "Simple accompaniment",
+              "arrangements": [
+                {
+                  "kind": "lyrics",
+                  "file": "frere-jacques.cho"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "meta": {
+        "id": "john-newton",
+        "name": "John Newton"
+      },
+      "songs": [
+        {
+          "meta": {
+            "id": "amazing-grace",
+            "title": "Amazing Grace",
+            "composer": "John Newton",
+            "genre": "folk",
+            "difficulty": "easy",
+            "tags": [
+              "folk",
+              "starter"
+            ]
+          },
+          "versions": [
+            {
+              "id": "v1",
+              "name": "Simple accompaniment",
+              "arrangements": [
+                {
+                  "kind": "lyrics",
+                  "file": "amazing-grace.cho"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "meta": {
+        "id": "robert-burns",
+        "name": "Robert Burns"
+      },
+      "songs": [
+        {
+          "meta": {
+            "id": "auld-lang-syne",
+            "title": "Auld Lang Syne",
+            "composer": "Robert Burns",
+            "genre": "folk",
+            "difficulty": "easy",
+            "tags": [
+              "folk",
+              "starter"
+            ]
+          },
+          "versions": [
+            {
+              "id": "v1",
+              "name": "Simple accompaniment",
+              "arrangements": [
+                {
+                  "kind": "lyrics",
+                  "file": "auld-lang-syne.cho"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "meta": {
+        "id": "jane-taylor",
+        "name": "Jane Taylor"
+      },
+      "songs": [
+        {
+          "meta": {
+            "id": "twinkle-little-star",
+            "title": "Twinkle, Twinkle, Little Star",
+            "composer": "Jane Taylor",
+            "genre": "folk",
+            "difficulty": "easy",
+            "tags": [
+              "folk",
+              "starter"
+            ]
+          },
+          "versions": [
+            {
+              "id": "v1",
+              "name": "Simple accompaniment",
+              "arrangements": [
+                {
+                  "kind": "lyrics",
+                  "file": "twinkle-little-star.cho"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "meta": {
+        "id": "petzold",
+        "name": "Christian Petzold"
+      },
+      "songs": [
+        {
+          "meta": {
+            "id": "minuet-g-theme",
+            "title": "Minuet in G major, BWV Anh. 114 — first theme",
+            "composer": "Christian Petzold",
+            "genre": "classical",
+            "difficulty": "easy",
+            "tags": [
+              "classical",
+              "starter"
+            ]
+          },
+          "versions": [
+            {
+              "id": "v1",
+              "name": "Melody study",
+              "arrangements": [
+                {
+                  "kind": "tabs",
+                  "file": "minuet-g-theme.abc"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "meta": {
+        "id": "bach",
+        "name": "J. S. Bach"
+      },
+      "songs": [
+        {
+          "meta": {
+            "id": "bourree-bwv996-theme",
+            "title": "Bourrée in E minor, BWV 996 — first theme",
+            "composer": "J. S. Bach",
+            "genre": "classical",
+            "difficulty": "easy",
+            "tags": [
+              "classical",
+              "starter"
+            ]
+          },
+          "versions": [
+            {
+              "id": "v1",
+              "name": "Melody study",
+              "arrangements": [
+                {
+                  "kind": "tabs",
+                  "file": "bourree-bwv996-theme.abc"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "id": "theme-dark",
+  "type": "theme",
+  "name": { "en": "Dark", "it": "Scuro" },
+  "description": "Dark theme for low-light practice.",
+  "version": "1.0.0",
+  "apiVersion": 1,
+  "permissions": []
+}

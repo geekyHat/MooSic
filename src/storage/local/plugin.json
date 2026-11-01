@@ -1,0 +1,9 @@
+{
+  "id": "storage-local",
+  "type": "storage",
+  "name": { "en": "Local storage", "it": "Storage locale" },
+  "description": "Persists settings and progress in the browser (localStorage).",
+  "version": "1.0.0",
+  "apiVersion": 1,
+  "permissions": ["storage-write"]
+}

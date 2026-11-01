@@ -1,0 +1,15 @@
+{
+  "id": "instrument-ukulele",
+  "type": "instrument",
+  "name": { "en": "Ukulele (4-string, gCEA)", "it": "Ukulele (4 corde, gCEA)" },
+  "description": "Soprano ukulele, standard gCEA tuning.",
+  "version": "1.0.0",
+  "apiVersion": 1,
+  "permissions": [],
+  "config": {
+    "defaults": { "fretCount": 16 },
+    "schema": {
+      "fretCount": { "type": "integer", "min": 12, "max": 20, "ui": "slider" }
+    }
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "id": "transport-metronome",
+  "type": "transport",
+  "name": { "en": "Metronome", "it": "Metronome" },
+  "description": "Click track with accented downbeat, sample-accurate.",
+  "version": "1.0.0",
+  "apiVersion": 1,
+  "permissions": ["audio-play"]
+}

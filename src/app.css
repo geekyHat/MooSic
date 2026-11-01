@@ -1,0 +1,163 @@
+@import 'tailwindcss';
+
+/* Theme token fallbacks (overridden at runtime by the active theme plugin,
+   which injects a <style id="mm-theme"> with the same variables). */
+:root {
+  --mm-bg: #f6f5f0;
+  --mm-panel: #ffffff;
+  --mm-ink: #1d1d1f;
+  --mm-muted: #6e6e73;
+  --mm-accent: #1d4ed8;
+  --mm-accent-ink: #ffffff;
+  --mm-border: #dcdcd4;
+  --mm-score-ink: #26262a;
+  --mm-tab-line: #3a3a40;
+  --mm-tab-ink: #26262a;
+  --mm-note-active: #1d4ed8;
+  --mm-note-ok: #166534;
+  --mm-note-bad: #dc2626;
+  --mm-warn: #b45309;
+}
+
+/* Map the runtime theme tokens to Tailwind theme colors, so utilities like
+   bg-panel / text-muted / border-line / bg-accent/10 resolve to the active
+   theme's values and switch instantly on theme change. */
+@theme {
+  --color-bg: var(--mm-bg);
+  --color-panel: var(--mm-panel);
+  --color-ink: var(--mm-ink);
+  --color-muted: var(--mm-muted);
+  --color-accent: var(--mm-accent);
+  --color-accent-ink: var(--mm-accent-ink);
+  --color-line: var(--mm-border);
+  --color-score: var(--mm-score-ink);
+  --color-tabline: var(--mm-tab-line);
+  --color-tabink: var(--mm-tab-ink);
+  --color-active: var(--mm-note-active);
+  --color-ok: var(--mm-note-ok);
+  --color-bad: var(--mm-note-bad);
+  --color-warn: var(--mm-warn);
+
+  --breakpoint-narrow: 45rem; /* 720px */
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    background-color: var(--color-bg);
+    color: var(--color-ink);
+    font-family:
+      system-ui,
+      -apple-system,
+      'Segoe UI',
+      Roboto,
+      sans-serif;
+    font-size: 15px;
+  }
+  :where(button:not([data-grid-cell]), select, input:not([type='checkbox']):not([type='range']), textarea) {
+    min-height: 2.5rem;
+  }
+
+  :where(button, input, select, textarea, a):focus-visible {
+    outline: 2px solid var(--mm-accent);
+    outline-offset: 3px;
+  }
+
+  button:disabled { cursor: not-allowed; opacity: 0.55; }
+  input, select, textarea { color: inherit; max-width: 100%; }
+  input[type='range'] { min-width: 0; }
+}
+
+.mm-skip-link {
+  position: fixed;
+  top: 0.5rem;
+  left: 0.5rem;
+  z-index: 100;
+  transform: translateY(-200%);
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  background: var(--mm-panel);
+  color: var(--mm-accent);
+}
+.mm-skip-link:focus { transform: translateY(0); }
+.mm-main > div:not([class*='max-w-']) { max-width: 1200px; margin-inline: auto; }
+.mm-library-header h2 { font-weight: 700; letter-spacing: -0.025em; }
+.mm-card { overflow-wrap: anywhere; box-shadow: 0 2px 6px rgb(0 0 0 / 3%); }
+.mm-card h3 { font-weight: 650; }
+.mm-library-filters > * { min-width: 0; }
+.mm-library-filters .mm-search { min-width: min(100%, 220px); }
+.mm-settings-section .mm-settings-section { border-radius: 12px; padding: 16px; background: var(--mm-panel); border: 1px solid var(--mm-border); }
+.mm-plugin-info { overflow-wrap: anywhere; }
+.mm-config label { flex-wrap: wrap; max-width: 100%; }
+.mm-config input[type='range'] { width: 8rem; }
+.mm-plugin-row > button { flex-shrink: 0; }
+.mm-control { flex-wrap: wrap; max-width: 100%; }
+.mm-display-tabs { flex-wrap: wrap; }
+.mm-header { container-type: inline-size; flex-wrap: wrap; }
+.mm-nav { flex-wrap: wrap; }
+.mm-nav > button { min-width: 0; overflow-wrap: anywhere; }
+.mm-logo { overflow-wrap: anywhere; }
+@container (max-width: 600px) {
+  .mm-nav { order: 3; flex-basis: 100%; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .mm-nav > button { min-width: 0; padding-inline: 0.25rem; font-size: 0.75rem; overflow-wrap: anywhere; }
+}
+@container (max-width: 260px) {
+  .mm-nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .mm-logo > span:first-child { display: none; }
+}
+.mm-renderer-panel, .mm-chord-sheet { min-width: 0; }
+.mm-chord-sheet { overflow-wrap: anywhere; }
+.mm-anchored-lyrics { max-inline-size: 100%; font-size: 1rem; line-height: 1.75rem; white-space: pre-wrap; }
+.mm-lyric-fragment { display: inline-grid; grid-template-rows: 1.25em minmax(1.75rem, auto); vertical-align: bottom; max-inline-size: 100%; overflow-wrap: anywhere; }
+.mm-chord-above { min-block-size: 1.25em; align-self: end; color: var(--mm-accent); font-size: 0.8em; font-weight: 700; line-height: 1.25em; white-space: pre; }
+.mm-chord-above > .chord-mark { margin-inline-end: 0.25em; }
+.mm-sheet-line { min-block-size: 3rem; max-inline-size: 100%; }
+
+/* Reserve the selector row so revealing controls never moves the song. */
+.mm-voicing-controls { opacity: 1; transition: opacity 120ms ease; }
+@media (hover: hover) and (pointer: fine) {
+  .mm-chord-diag .mm-voicing-controls { opacity: 0; pointer-events: none; }
+  .mm-chord-diag:hover .mm-voicing-controls,
+  .mm-chord-diag:focus-within .mm-voicing-controls { opacity: 1; pointer-events: auto; }
+}
+
+@media (max-width: 45rem) {
+  .mm-library-filters > select { flex: 1 1 140px; width: 100%; }
+  .mm-practice-controls { padding: 12px; border: 1px solid var(--mm-border); border-radius: 12px; background: var(--mm-panel); }
+  .mm-practice-controls .mm-control { width: 100%; }
+  .mm-display-tabs > button { flex: 1 1 80px; padding-inline: 6px; font-size: 12px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0s !important; animation-duration: 0s !important; }
+}
+
+/* ---- Rules below are applied by the renderer plugins at runtime (via
+   classList on SVG/DOM elements), so they live here instead of in JSX. ---- */
+
+/* Tab renderer: active note highlight. */
+.mm-tab-note-active .mm-tab-note-circle {
+  fill: var(--mm-note-active);
+  stroke: var(--mm-note-active);
+}
+
+.mm-tab-note-active .mm-tab-note-text {
+  fill: #fff;
+}
+
+/* Notation renderer: active note glow. */
+.mm-notation-active {
+  filter: drop-shadow(0 0 2px var(--mm-note-active));
+}
+
+/* Notation renderer: empty/failed render placeholder. */
+.mm-renderer-empty {
+  color: var(--mm-muted);
+  padding: 18px;
+  text-align: center;
+}

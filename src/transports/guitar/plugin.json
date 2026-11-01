@@ -1,0 +1,9 @@
+{
+  "id": "transport-guitar",
+  "type": "transport",
+  "name": { "en": "Guitar (real notes)", "it": "Chitarra (note reali)" },
+  "description": "Plays each tab note with a real recorded guitar sample at the correct pitch (string + fret).",
+  "version": "1.0.0",
+  "apiVersion": 1,
+  "permissions": ["audio-play"]
+}

@@ -1,0 +1,17 @@
+{title: Auld Lang Syne}
+{artist: Robert Burns}
+{genre: folk}
+{tempo: 100}
+# Historical Scots text (1788); traditional tune. First verse and chorus.
+# Original simplified chord accompaniment for MusicMaestro.
+{c:Verse}
+Should [G]auld acquaintance [D]be forgot,
+And [G]never brought to [C]mind?
+Should [G]auld acquaintance [D]be forgot,
+And [C]auld lang [G]syne?
+
+{c:Chorus}
+For [G]auld lang [D]syne, my dear,
+For [G]auld lang [C]syne,
+We'll [G]tak a cup o' [D]kindness yet,
+For [C]auld lang [G]syne.

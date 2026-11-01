@@ -1,0 +1,9 @@
+{
+  "id": "theme-default",
+  "type": "theme",
+  "name": { "en": "Default (light)", "it": "Default (chiaro)" },
+  "description": "Light theme, warm paper background.",
+  "version": "1.0.0",
+  "apiVersion": 1,
+  "permissions": []
+}
