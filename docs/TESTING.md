@@ -64,3 +64,7 @@ docker run --rm --init --network=host --shm-size=1g \
 ```
 
 Use fresh artifact and runtime directories for each run. `--network=host` is specific to this local Linux setup. Test commands verify behavior, geometry, semantics and audio API use; they do not certify perceived musical quality or accessibility on every device.
+
+## LocalSend handoff
+
+`tests/localsend.spec.ts` exports a real library ZIP and imports it in an independent browser context, preserving TAB and exact OLGA sources, local records and duplicate handling. It exercises missing/rejected file-sharing support, explicit-click activation, cancelled/failed sharing, download fallback and Italian instructions/accessibility at 320px. Native share APIs are mocked only for handoff behavior: automated tests do not install LocalSend or certify a physical Wi-Fi transfer. Test that on real PC/Android devices with LocalSend installed and the published PWA, including a browser that cannot share ZIP files. Confirm received data by importing and opening a song; a resolved share promise is not proof of receipt. Existing `backup.spec.ts` covers rollback, validation and preference restoration; `sync.spec.ts` also checks that active WebRTC pairing blocks LocalSend export/import.

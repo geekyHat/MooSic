@@ -1,8 +1,27 @@
-# Sincronizzazione manuale fra dispositivi, senza server
+# Trasferire la libreria fra dispositivi
+
+## Trasferimento con LocalSend (consigliato)
+
+LocalSend trasferisce file sulla rete locale senza account o server esterni. Deve essere installato separatamente sui due dispositivi; MooSic prepara e importa il file della libreria. Il collegamento non richiede la videocamera del PC.
+
+1. Installare [LocalSend dal sito ufficiale](https://localsend.org/download) su PC e telefono/tablet. Collegarli alla stessa rete Wi-Fi/LAN; il PC può usare Ethernet. Aprire la copia di MooSic che contiene la libreria e salvare le bozze.
+2. In **Impostazioni → Trasferisci con LocalSend** premere **Prepara file della libreria**. La preparazione non apre automaticamente condivisioni né invia dati.
+3. Premere **Salva file per LocalSend**. In LocalSend scegliere **Invia**, selezionare lo ZIP `MooSic-library-AAAA-MM-GG.zip` appena salvato, scegliere il dispositivo destinatario e accettare la ricezione su quel dispositivo. Se disponibile, **Condividi…** apre invece il menu del sistema: scegliere LocalSend. Il supporto dipende dal browser e dal tipo/dimensione del file; il download resta sempre disponibile.
+4. Sul destinatario aprire MooSic → **Impostazioni → Importa libreria ricevuta**, selezionare lo ZIP ricevuto, controllare l’anteprima e premere **Unisci alla libreria**. Le preferenze restano locali salvo selezione esplicita. Terminare con **Riapri l’app**.
+5. Per riportare le modifiche al primo dispositivo, ripetere in senso inverso. È uno scambio manuale di istantanee: le eliminazioni non vengono propagate e versioni diverse sono conservate separatamente.
+
+Il file usa lo stesso formato del backup completo: brani salvati, TAB, arrangiamenti, alias, originali testuali e documenti OLGA. Foto/PDF originali e bozze non salvate sono esclusi. L’anteprima non modifica la libreria; l’unione conserva i contenuti presenti e salta i duplicati identici. Il repertorio iniziale arriva con gli aggiornamenti dell’app. Preparare nuovamente il file dopo ulteriori modifiche: il file pronto in memoria rappresenta il momento della preparazione.
+
+MooSic non può installare LocalSend, forzarlo come destinazione del menu di condivisione né confermare che il destinatario abbia ricevuto o importato il file. Chiudere il menu di condivisione lascia il file disponibile; se la condivisione fallisce, usare il download. I file pronti restano in memoria finché vengono chiusi, sostituiti o si lascia la pagina. Il trasferimento LocalSend è cifrato, mentre lo ZIP salvato non è cifrato. [Protocollo e piattaforme LocalSend](https://github.com/localsend/localsend).
+
+Se il destinatario non compare, verificare che LocalSend sia aperto sui due dispositivi, che la rete non sia una rete ospiti isolata e che firewall/VPN consentano il traffico locale. MooSic può importare anche un backup trasferito via USB. LocalSend non legge né sincronizza direttamente i database del browser.
+
+## Collegamento WebRTC avanzato con due codici
+
 
 La soluzione scelta usa un canale dati WebRTC cifrato e due codici di abbinamento. Non richiede Syncthing, account, servizi di segnalazione, STUN o TURN. L’app rimane distribuibile come sito statico. I dispositivi devono essere sulla stessa rete Wi-Fi/LAN e il router deve consentire il traffico fra loro; reti ospiti isolate o connessioni mobili separate possono impedire il collegamento.
 
-## Uso
+### Uso del collegamento WebRTC
 
 1. Aprire **Impostazioni → Sincronizza con un altro dispositivo** su PC e telefono/tablet. Tenere entrambe le app aperte e in primo piano. Salvare prima le bozze musicali.
 2. Sul primo dispositivo premere **Crea codice di collegamento**. Sul secondo aprire il link o inquadrare il QR. Se l’app è già aperta, si può usare **Leggi QR con fotocamera**, **Apri immagine QR**, oppure incollare il codice/link e premere **Usa codice ricevuto**.
@@ -53,4 +72,4 @@ Syncthing sincronizza file/cartelle attraverso applicazioni esterne. Il browser 
 
 ## Moduli
 
-`application/sync` espone contratto, stato e caricamento differito; `infrastructure/sync` gestisce codici e trasporto WebRTC; i componenti nelle Impostazioni gestiscono due codici, QR, fotocamera, consenso e anteprima. L’applicazione e il ripristino restano indipendenti dal trasporto. La creazione dei QR e il decoder delle immagini sono distribuiti con la build e disponibili nella cache offline.
+`application/sync` espone contratto, stato e caricamento differito; `infrastructure/sync` gestisce codici e trasporto WebRTC; `LibraryTransfer` e `libraryTransfer.ts` preparano l’interfaccia LocalSend, il download e il controllo delle capacità di condivisione. `BackupSettings` riusa il servizio di backup per esportazione, anteprima e unione; la preparazione del file e il clic di condivisione sono separati per conservare l’attivazione richiesta dal browser. Gli altri componenti nelle Impostazioni gestiscono due codici, QR, fotocamera, consenso e anteprima. L’applicazione e il ripristino restano indipendenti dal trasporto. La creazione dei QR e il decoder delle immagini sono distribuiti con la build e disponibili nella cache offline.

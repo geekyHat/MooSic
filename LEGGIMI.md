@@ -7,7 +7,7 @@
 
 App locale per studiare la chitarra nel browser, con catalogo, tablature, notazione standard ed editor di canzoni. Non richiede account o backend applicativo.
 
-Versione applicazione: **0.1.0** · Documentazione aggiornata: **2026-11-01**.
+Versione applicazione: **0.1.0** · Documentazione aggiornata: **2026-11-02**.
 
 [Repository GitHub](https://github.com/geekyHat/MooSic) · [English](README.md) · [Architettura](docs/ARCHITECTURE.md) · [Test](docs/TESTING.md) · [Sincronizzazione](docs/PEER-SYNC.md)
 
@@ -56,7 +56,9 @@ I brani dell’editor sono separati dal repertorio distribuito. L’installazion
 
 ## Sincronizzare PC e telefono senza server
 
-In **Impostazioni → Sincronizza con un altro dispositivo** creare un codice sul primo dispositivo, riportare il codice di risposta dal secondo e confrontare il codice di verifica. Dopo la conferma su entrambi, le librerie vengono scambiate attraverso WebRTC cifrato e verificate prima dell’unione. Funziona sulla stessa rete Wi-Fi/LAN senza server di abbinamento. Sono disponibili link, QR, fotocamera, immagine QR e copia/incolla.
+Il percorso consigliato è **Impostazioni → Trasferisci con LocalSend**. Installare [LocalSend](https://localsend.org/download) sui due dispositivi e collegarli alla stessa rete Wi-Fi/LAN. In MooSic scegliere **Prepara file della libreria**, poi **Condividi…** e LocalSend nel menu del sistema, se il browser supporta la condivisione dello ZIP. Altrimenti usare **Salva file per LocalSend** e inviarlo da LocalSend. Sul destinatario scegliere **Importa libreria ricevuta**, selezionare lo ZIP, controllare l’anteprima e premere **Unisci alla libreria → Riapri l’app**. I contenuti presenti restano e le copie identiche sono saltate. Per riportare le modifiche ripetere in senso inverso. LocalSend è un’app separata: MooSic non la installa, non la seleziona nel menu e non rileva la ricezione. Non è una sincronizzazione in background. [Procedura e problemi comuni](docs/PEER-SYNC.md#trasferimento-con-localsend-consigliato).
+
+**Alternativa avanzata:** in **Impostazioni → Sincronizza con un altro dispositivo** creare un codice sul primo dispositivo, riportare il codice di risposta dal secondo e confrontare il codice di verifica. Dopo la conferma su entrambi, le librerie vengono scambiate attraverso WebRTC cifrato e verificate prima dell’unione. Funziona sulla stessa rete Wi-Fi/LAN senza server di abbinamento. Sono disponibili link, QR, fotocamera, immagine QR e copia/incolla.
 
 Brani, TAB, arrangiamenti e documenti OLGA vengono uniti senza cancellare i contenuti presenti; le versioni diverse restano come copie numerate. È uno scambio manuale: eliminazioni e preferenze non vengono propagate. [Procedura completa e limiti](docs/PEER-SYNC.md).
 
@@ -127,7 +129,7 @@ ChordPro importa metadati, accordi in linea, sezioni, commenti, ritornelli ripet
 
 **Unisci artisti**, sempre in Libreria, permette di correggere nomi duplicati già salvati. Si sceglie l’artista locale da unire e il nome da conservare: tutti i brani e gli ID rimangono presenti, con numerazione dei titoli in conflitto. I due brani inclusi di Beethoven ora mostrano lo stesso nome in libreria e in Pratica.
 
-L’importazione usa solo il dispositivo corrente: PC, telefono e tablet hanno librerie locali separate. Per aprire il server locale da un dispositivo sulla stessa rete si può usare `npm run dev -- --host 0.0.0.0` e visitare l’indirizzo del PC con la porta mostrata da Vite. Per installare la PWA usare la build HTTPS descritta sotto; per unire le librerie fra dispositivi usare Impostazioni → Sincronizza con un altro dispositivo sulla stessa rete Wi-Fi/LAN, come nella [guida](docs/PEER-SYNC.md). Mantenere lo stesso indirizzo/origine per ritrovare i dati locali.
+L’importazione usa solo il dispositivo corrente: PC, telefono e tablet hanno librerie locali separate. Per aprire il server locale da un dispositivo sulla stessa rete si può usare `npm run dev -- --host 0.0.0.0` e visitare l’indirizzo del PC con la porta mostrata da Vite. Per installare la PWA usare la build HTTPS descritta sotto; per unire le librerie fra dispositivi usare Impostazioni → Trasferisci con LocalSend sulla stessa rete Wi-Fi/LAN, come nella [guida](docs/PEER-SYNC.md). Mantenere lo stesso indirizzo/origine per ritrovare i dati locali.
 
 I test includono [file scaricati dal progetto ufficiale ChordPro](tests/fixtures/imports/README.md), con provenienza e hash, più TAB e casi di conflitto. Eseguire `npm run test:browser -- tests/import.spec.ts` per la verifica del percorso completo.
 

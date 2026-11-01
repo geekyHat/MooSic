@@ -30,7 +30,9 @@ The header uses `public/Logo/MooSicLogo.png` on desktop and a compact icon with 
 
 The build generates a manifest, service worker and integrity inventory. Core pages and their lazy chunks are precached; OCR/PDF assets have a separate opt-in offline pack. Updates coordinate open tabs and wait for active drafts, imports, backups and synchronization.
 
-Manual synchronization exchanges snapshots over an encrypted WebRTC data channel. Pairing uses two codes on the same LAN, without signaling, STUN or TURN servers. Both users confirm the verification code, then separately approve merging the received library. The sync transport reuses the backup service rather than writing directly to the library. See [the pairing and first-install guide](PEER-SYNC.md).
+The recommended transfer flow prepares a ZIP using the backup service and hands it to LocalSend via an explicit native-share click when the browser supports that file. A download is always available. LocalSend runs separately; receiving devices explicitly choose the ZIP, verify it and approve merging. No share-target registration, automatic discovery or delivery detection is claimed. Prepared files are held in page memory; no new storage format is introduced.
+
+The advanced manual synchronization option exchanges snapshots over an encrypted WebRTC data channel. Pairing uses two codes on the same LAN, without signaling, STUN or TURN servers. Both users confirm the verification code, then separately approve merging the received library. The sync transport reuses the backup service rather than writing directly to the library. See [the pairing and first-install guide](PEER-SYNC.md).
 
 ## Verification
 

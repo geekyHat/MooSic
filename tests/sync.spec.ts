@@ -61,6 +61,7 @@ test('invalid codes and camera denial expose usable fallbacks without changing l
 test('active pairing guards navigation and backup commands until explicit cancellation',async({page})=>{
  await seed(page,[song('Untouched','Original words')]);await page.goto('/#/settings')
  await panel(page).getByRole('button',{name:'1. Create pairing code',exact:true}).click();await expect(panel(page).getByLabel('Code to share',{exact:true})).not.toHaveValue('',{timeout:20000})
+ await expect(page.getByRole('button',{name:'Prepare library file',exact:true})).toBeDisabled();await expect(page.getByRole('button',{name:'Import received library',exact:true})).toBeDisabled();
  await expect(page.getByRole('button',{name:'Download full backup',exact:true})).toBeDisabled();await expect(page.getByRole('button',{name:'Open backup',exact:true})).toBeDisabled()
  await page.getByRole('navigation',{name:'Main navigation',exact:true}).getByRole('button',{name:'Library',exact:true}).click()
  await expect(page.getByRole('dialog')).toBeVisible();await page.getByRole('button',{name:'Keep editing',exact:true}).click()
