@@ -1,3 +1,4 @@
+import {openLegacySync} from '../fixtures/legacySync'
 import {test,expect,type Page} from '@playwright/test'
 import {scanImage,textPdf} from '../fixtures/scans'
 import {zipSync,strToU8} from 'fflate'
@@ -104,6 +105,7 @@ test('two cached installations cold launch and sync over LAN while HTTP hosting 
   await page.request.post('/__test/unavailable');expect((await page.request.get(base)).status()).toBe(503)
   await page.reload();await phone.reload()
   for(const device of [page,phone])await expect(device.getByText('Library and reading ready offline',{exact:true})).toBeVisible()
+  await openLegacySync(page);await openLegacySync(phone)
   await sync(page).getByRole('button',{name:'1. Create pairing code',exact:true}).click();const offer=sync(page).getByLabel('Code to share',{exact:true});await expect(offer).not.toHaveValue('',{timeout:20000})
   await sync(phone).getByLabel('Received code or link',{exact:true}).fill(await offer.inputValue());await sync(phone).getByRole('button',{name:'Use received code',exact:true}).click();const answer=sync(phone).getByLabel('Code to share',{exact:true});await expect(answer).not.toHaveValue('',{timeout:20000})
   await sync(page).getByLabel('Received code or link',{exact:true}).fill(await answer.inputValue());await sync(page).getByRole('button',{name:'Use received code',exact:true}).click()
@@ -111,7 +113,7 @@ test('two cached installations cold launch and sync over LAN while HTTP hosting 
   for(const device of [page,phone])await sync(device).getByRole('button',{name:'Codes match — confirm',exact:true}).click()
   for(const device of [page,phone])await expect(sync(device).getByLabel('Received library verified',{exact:true})).toBeVisible({timeout:30000})
   for(const device of [page,phone]){await sync(device).getByRole('button',{name:'Merge received library',exact:true}).click();await expect(device.getByRole('dialog',{name:'Sync complete',exact:true})).toBeVisible();await device.getByRole('button',{name:'Reopen app',exact:true}).click()}
-  await expect(sync(phone)).toBeVisible();expect(await phone.evaluate(()=>JSON.parse(localStorage.getItem('mm:user-songs')??'[]'))).toEqual([song])
+  await openLegacySync(phone);await expect(sync(phone)).toBeVisible();expect(await phone.evaluate(()=>JSON.parse(localStorage.getItem('mm:user-songs')??'[]'))).toEqual([song])
  }finally{await second.close()}
 })
 test('first QR access prepares the app and resumes real pairing after an installation prompt and icon launch',async({page,browser})=>{
@@ -120,7 +122,7 @@ test('first QR access prepares the app and resumes real pairing after an install
  const second=await browser.newContext({locale:'en-US',viewport:{width:375,height:900}}),landing=await second.newPage()
  const sync=(device:Page)=>device.getByRole('region',{name:'Sync with another device',exact:true})
  try{
-  await ready(page);await sync(page).getByRole('button',{name:'1. Create pairing code',exact:true}).click()
+  await ready(page);await openLegacySync(page);await sync(page).getByRole('button',{name:'1. Create pairing code',exact:true}).click()
   const link=sync(page).getByLabel('Link to share',{exact:true});await expect(link).not.toHaveValue('',{timeout:20000})
   const requests:string[]=[];landing.on('request',request=>requests.push(request.url()))
   await landing.goto(await link.inputValue())
@@ -137,7 +139,7 @@ test('first QR access prepares the app and resumes real pairing after an install
   await expect(welcome.getByRole('heading',{name:'Installation confirmed',exact:true})).toBeVisible()
   const app=await second.newPage();await app.addInitScript(()=>Object.defineProperty(navigator,'standalone',{value:true}));await app.goto(base)
   await expect(app).toHaveURL(/#\/settings$/);await expect(app.getByRole('region',{name:'Bring your library to this device',exact:true})).toHaveCount(0)
-  await expect(sync(app).getByLabel('Received code or link',{exact:true})).toHaveValue(/^MM-SYNC1/)
+  await openLegacySync(app);await expect(sync(app).getByLabel('Received code or link',{exact:true})).toHaveValue(/^MM-SYNC1/)
   await landing.close()
   await sync(app).getByRole('button',{name:'Use received code',exact:true}).click()
   const answer=sync(app).getByLabel('Code to share',{exact:true});await expect(answer).not.toHaveValue('',{timeout:20000})
@@ -147,7 +149,7 @@ test('first QR access prepares the app and resumes real pairing after an install
   await expect(sync(app).getByLabel('Received library verified',{exact:true})).toBeVisible({timeout:30000})
   expect(await app.evaluate(()=>localStorage.getItem('mm:user-songs'))).toBeNull()
   await sync(app).getByRole('button',{name:'Merge received library',exact:true}).click();await expect(app.getByRole('dialog',{name:'Sync complete',exact:true})).toBeVisible()
-  await app.getByRole('button',{name:'Reopen app',exact:true}).click();await expect(sync(app)).toBeVisible()
+  await app.getByRole('button',{name:'Reopen app',exact:true}).click();await openLegacySync(app);await expect(sync(app)).toBeVisible()
   expect(await app.evaluate(()=>JSON.parse(localStorage.getItem('mm:user-songs')??'[]'))).toEqual([song])
   expect(requests.every(url=>!url.includes('sync=')&&!url.includes('MM-SYNC1'))).toBe(true)
   await app.goto(base);await expect(app).toHaveURL(/#\/library$/)

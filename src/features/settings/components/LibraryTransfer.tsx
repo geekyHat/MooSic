@@ -8,8 +8,8 @@ interface Props {
 }
 export function LibraryTransfer({locale,file,disabled,sharing,notice,onPrepare,onShare,onDiscard,onImport}:Props){
  const it=locale==='it',input=useRef<HTMLInputElement>(null),shareable=file&&canShareLibrary(file)
- return <section aria-labelledby="library-transfer-title" className="mm-settings-section mb-5 min-w-0 rounded-xl border border-line bg-panel p-4">
-  <h2 id="library-transfer-title" className="mb-2 text-lg">{it?'Trasferisci con LocalSend':'Transfer with LocalSend'}</h2>
+ return <section id="library-transfer" aria-labelledby="library-transfer-title" className="mm-settings-section mb-5 min-w-0 rounded-xl border border-line bg-panel p-4">
+  <h2 tabIndex={-1} id="library-transfer-title" className="mb-2 text-lg">{it?'Trasferisci con LocalSend':'Transfer with LocalSend'}</h2>
   <p className="mb-3 text-sm text-muted">{it?'Porta brani salvati, TAB e documenti OLGA su un altro dispositivo, senza abbinamenti QR o server esterni. È uno scambio manuale: per riportare le modifiche, ripeti il trasferimento in senso inverso.':'Move saved songs, TAB and OLGA documents to another device, without QR pairing or external servers. This is a manual exchange: transfer back to bring changes to the first device.'}</p>
   <ol className="mb-4 list-decimal space-y-2 pl-5 text-sm">
    <li>{it?'Installa LocalSend su entrambi i dispositivi e collegali alla stessa rete Wi-Fi/LAN. Il PC può essere collegato via cavo.':'Install LocalSend on both devices and connect them to the same Wi-Fi/LAN. The PC can use Ethernet.'} <a href="https://localsend.org/download" target="_blank" rel="noopener noreferrer" className="underline">{it?'Scarica LocalSend (sito esterno)':'Download LocalSend (external site)'}</a></li>

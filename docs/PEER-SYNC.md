@@ -18,6 +18,8 @@ Se il destinatario non compare, verificare che LocalSend sia aperto sui due disp
 
 ## Collegamento WebRTC avanzato con due codici
 
+Il vecchio percorso è chiuso per impostazione iniziale sotto **Impostazioni → Avanzate: vecchio collegamento con due codici**. Aprirlo esplicitamente solo per usare WebRTC. Il normale trasferimento LocalSend non richiede QR. Un vecchio invito può essere eliminato con **Usa LocalSend invece del QR**: vengono rimossi il codice in memoria, gli inviti salvati e il parametro dal link corrente, senza modificare la libreria. Nell’app già installata gli inviti non aprono automaticamente il pannello avanzato.
+
 
 La soluzione scelta usa un canale dati WebRTC cifrato e due codici di abbinamento. Non richiede Syncthing, account, servizi di segnalazione, STUN o TURN. L’app rimane distribuibile come sito statico. I dispositivi devono essere sulla stessa rete Wi-Fi/LAN e il router deve consentire il traffico fra loro; reti ospiti isolate o connessioni mobili separate possono impedire il collegamento.
 
@@ -36,7 +38,7 @@ Il QR della versione pubblicata contiene un link HTTPS che carica l’app sul te
 
 - Su browser che espongono la richiesta nativa, premere **Installa MooSic** e confermare nel dialogo del browser. Non viene aperta una richiesta di installazione senza un clic; accettare il prompt non viene presentato come prova dell’installazione prima dell’evento del browser.
 - Su iPhone/iPad seguire **Condividi → Aggiungi alla schermata Home** e aprire la nuova icona. Se il lettore QR apre un browser interno, aprire il link in Safari. Su altri browser è disponibile la guida al relativo menu di installazione.
-- L’invito viene conservato per il suo tempo residuo, al massimo dieci minuti. Un avvio dall’icona all’indirizzo iniziale lo recupera e apre direttamente le Impostazioni quando la nuova finestra condivide l’archiviazione della stessa origine.
+- L’invito viene conservato per il suo tempo residuo, al massimo dieci minuti. Un avvio dall’icona all’indirizzo iniziale lo recupera e apre le Impostazioni quando la nuova finestra condivide l’archiviazione della stessa origine. Il pannello QR resta chiuso finché si sceglie il collegamento avanzato.
 - **Copia invito per riprendere** conserva il link negli appunti con un gesto esplicito. Su iOS Safari e l’app installata possono avere archivi separati: in quel caso incollare l’invito in **Impostazioni → Sincronizza con un altro dispositivo**, oppure leggere il QR dall’interno dell’app installata. Il campo selezionabile resta disponibile se l’accesso agli appunti viene negato.
 - Si può scegliere **Continua nel browser** senza installare. Il trasferimento richiede comunque confronto del codice e conferma su entrambi i dispositivi, poi l’unione esplicita della libreria.
 

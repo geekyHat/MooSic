@@ -32,6 +32,8 @@ The build generates a manifest, service worker and integrity inventory. Core pag
 
 The recommended transfer flow prepares a ZIP using the backup service and hands it to LocalSend via an explicit native-share click when the browser supports that file. A download is always available. LocalSend runs separately; receiving devices explicitly choose the ZIP, verify it and approve merging. No share-target registration, automatic discovery or delivery detection is claimed. Prepared files are held in page memory; no new storage format is introduced.
 
+LegacySyncSettings keeps the former QR flow collapsed by default. Pending invitations in an installed app focus the LocalSend section rather than opening QR controls. The first-install welcome can explicitly discard the old invitation and switch to LocalSend without touching library data.
+
 The advanced manual synchronization option exchanges snapshots over an encrypted WebRTC data channel. Pairing uses two codes on the same LAN, without signaling, STUN or TURN servers. Both users confirm the verification code, then separately approve merging the received library. The sync transport reuses the backup service rather than writing directly to the library. See [the pairing and first-install guide](PEER-SYNC.md).
 
 ## Verification

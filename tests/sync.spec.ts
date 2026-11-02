@@ -1,16 +1,17 @@
+import {openLegacySync} from './fixtures/legacySync'
 import {test,expect,type Page} from '@playwright/test'
 const song=(id:string,words:string)=>({id,name:id,artist:'Sync Artist',genre:'Folk',createdAt:1,arrangements:[{id:'arr-'+id,name:'Lyrics',kind:'lyrics',tempo:100,bars:1,beatsPerBar:4,chordBars:[{chord:'Am',lyric:words}],source:{format:'chordpro',text:'[Am]'+words}}]})
 async function seed(page:Page,songs:ReturnType<typeof song>[]){await page.addInitScript(songs=>{if(!localStorage.getItem('mm:user-songs'))localStorage.setItem('mm:user-songs',JSON.stringify(songs))},songs)}
 const panel=(page:Page)=>page.getByRole('region',{name:'Sync with another device',exact:true})
 async function start(pc:Page,mobile:Page,qr=false){
- await pc.goto('/#/settings');await panel(pc).getByRole('button',{name:'1. Create pairing code',exact:true}).click()
+ await pc.goto('/#/settings');await openLegacySync(pc);await panel(pc).getByRole('button',{name:'1. Create pairing code',exact:true}).click()
  const link=panel(pc).getByLabel('Link to share',{exact:true});await expect(link).not.toHaveValue('',{timeout:20000})
  if(qr){
-   await mobile.goto('/#/settings');await expect(panel(pc).getByAltText('Pairing QR code',{exact:true})).toBeVisible()
+   await mobile.goto('/#/settings');await openLegacySync(mobile);await expect(panel(pc).getByAltText('Pairing QR code',{exact:true})).toBeVisible()
    const image=await panel(pc).getByAltText('Pairing QR code',{exact:true}).getAttribute('src')
    await panel(mobile).getByLabel('QR image',{exact:true}).setInputFiles({name:'offer.png',mimeType:'image/png',buffer:Buffer.from(image!.split(',')[1],'base64')})
    await expect(panel(mobile).getByLabel('Received code or link',{exact:true})).toHaveValue(/^MM-SYNC1/)
- }else{await mobile.goto(await link.inputValue());await expect(panel(mobile).getByLabel('Received code or link',{exact:true})).toHaveValue(/^MM-SYNC1/)}
+ }else{await mobile.goto(await link.inputValue());await openLegacySync(mobile);await expect(panel(mobile).getByLabel('Received code or link',{exact:true})).toHaveValue(/^MM-SYNC1/)}
  await panel(mobile).getByRole('button',{name:'Use received code',exact:true}).click()
  const reply=panel(mobile).getByLabel('Code to share',{exact:true});await expect(reply).not.toHaveValue('',{timeout:20000})
  await panel(pc).getByLabel('Received code or link',{exact:true}).fill(await reply.inputValue());await panel(pc).getByRole('button',{name:'Use received code',exact:true}).click()
@@ -33,7 +34,7 @@ test('two independent devices exchange encrypted libraries, require both consent
   await panel(page).getByRole('button',{name:'Merge received library',exact:true}).click();await expect(page.getByRole('dialog',{name:'Sync complete',exact:true})).toContainText('Added 1 songs and 0 OLGA documents. Skipped 1 identical copies.')
   await panel(mobile).getByRole('button',{name:'Merge received library',exact:true}).click();await expect(mobile.getByRole('dialog',{name:'Sync complete',exact:true})).toBeVisible()
   expect((await stored(page)).map((s:{id:string})=>s.id).sort()).toEqual(['Mobile study','PC study','Shared']);expect((await stored(mobile)).map((s:{id:string})=>s.id).sort()).toEqual(['Mobile study','PC study','Shared'])
-  await page.getByRole('button',{name:'Reopen app',exact:true}).click();await expect(panel(page)).toBeVisible()
+  await page.getByRole('button',{name:'Reopen app',exact:true}).click();await openLegacySync(page);await expect(panel(page)).toBeVisible()
  }finally{await context.close()}
 })
 test('QR image pairing works at 320px and cancelled verified transfers do not write local data',async({page,browser})=>{
@@ -50,7 +51,7 @@ test('QR image pairing works at 320px and cancelled verified transfers do not wr
 })
 test('invalid codes and camera denial expose usable fallbacks without changing libraries',async({page})=>{
  await page.addInitScript(()=>{Object.defineProperty(navigator.mediaDevices,'getUserMedia',{value:()=>Promise.reject(new DOMException('Denied','NotAllowedError'))})})
- await seed(page,[song('Untouched','Original words')]);await page.goto('/#/settings')
+ await seed(page,[song('Untouched','Original words')]);await page.goto('/#/settings');await openLegacySync(page)
  await panel(page).getByLabel('Received code or link',{exact:true}).fill('https://example.invalid/#bad');await panel(page).getByRole('button',{name:'Use received code',exact:true}).click();await expect(panel(page).getByRole('alert')).toContainText('Invalid or incomplete code')
  await panel(page).getByRole('button',{name:'1. Create pairing code',exact:true}).click();await expect(panel(page).getByLabel('Code to share',{exact:true})).not.toHaveValue('',{timeout:20000})
  await panel(page).getByRole('button',{name:'Cancel pairing',exact:true}).click()
@@ -59,7 +60,7 @@ test('invalid codes and camera denial expose usable fallbacks without changing l
  expect((await stored(page)).map((s:{id:string})=>s.id)).toEqual(['Untouched'])
 })
 test('active pairing guards navigation and backup commands until explicit cancellation',async({page})=>{
- await seed(page,[song('Untouched','Original words')]);await page.goto('/#/settings')
+ await seed(page,[song('Untouched','Original words')]);await page.goto('/#/settings');await openLegacySync(page)
  await panel(page).getByRole('button',{name:'1. Create pairing code',exact:true}).click();await expect(panel(page).getByLabel('Code to share',{exact:true})).not.toHaveValue('',{timeout:20000})
  await expect(page.getByRole('button',{name:'Prepare library file',exact:true})).toBeDisabled();await expect(page.getByRole('button',{name:'Import received library',exact:true})).toBeDisabled();
  await expect(page.getByRole('button',{name:'Download full backup',exact:true})).toBeDisabled();await expect(page.getByRole('button',{name:'Open backup',exact:true})).toBeDisabled()
@@ -75,7 +76,7 @@ test('large OLGA sources, TAB and conflicting edits survive transfer and a repea
  const tab={id:'TAB study',name:'TAB study',artist:'Sync Artist',genre:'Classical',createdAt:1,arrangements:[{id:'tab-arr',name:'Tabs',kind:'tabs',tempo:100,bars:1,beatsPerBar:4,tabNotes:[{row:0,beat:0,fret:5},{row:1,beat:1,fret:3}]}]}
  try{
   await page.addInitScript(songs=>{if(!localStorage.getItem('mm:user-songs'))localStorage.setItem('mm:user-songs',JSON.stringify(songs))},[song('Edited study','PC original'),tab])
-  await seed(mobile,[song('Edited study','Phone edited')]);await page.goto('/#/settings');await expect(panel(page)).toBeVisible()
+  await seed(mobile,[song('Edited study','Phone edited')]);await page.goto('/#/settings');await openLegacySync(page);await expect(panel(page)).toBeVisible()
   const original=await page.evaluate(async()=>{
    let text='Original synthetic source notice\r\n[Am]Large library study\r\n'
    for(let n=0;n<7;n++){const bytes=crypto.getRandomValues(new Uint8Array(65536));let binary='';for(let i=0;i<bytes.length;i+=8192)binary+=String.fromCharCode(...bytes.subarray(i,i+8192));text+=btoa(binary)+'\r\n'}

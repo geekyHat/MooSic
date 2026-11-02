@@ -1,3 +1,4 @@
+import {openLegacySync} from './fixtures/legacySync'
 import {test,expect} from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
 import {encodePairing,PAIRING_LIFETIME} from '../src/infrastructure/sync/pairingCode'
@@ -41,7 +42,7 @@ test('a new standalone window resumes a pending invitation and consumed invitati
  const code=offer();await page.goto('/#/settings?sync='+code)
  const app=await context.newPage();await app.addInitScript(()=>Object.defineProperty(navigator,'standalone',{value:true}))
  await app.goto('/');await expect(app).toHaveURL(/#\/settings$/)
- await expect(app.getByRole('region',{name:welcome,exact:true})).toHaveCount(0);await expect(app.getByLabel('Received code or link',{exact:true})).toHaveValue(code)
+ await expect(app.getByRole('region',{name:welcome,exact:true})).toHaveCount(0);await openLegacySync(app);await expect(app.getByLabel('Received code or link',{exact:true})).toHaveValue(code)
  // Explicit cancellation of a new pairing also discards an earlier invitation.
  await app.getByRole('button',{name:'1. Create pairing code',exact:true}).click();await expect(app.getByLabel('Code to share',{exact:true})).not.toHaveValue('',{timeout:20000})
  await app.getByRole('button',{name:'Cancel pairing',exact:true}).click()
