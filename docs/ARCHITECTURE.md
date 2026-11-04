@@ -24,11 +24,12 @@ The header uses `public/Logo/MooSicLogo.png` on desktop and a compact icon with 
 - The shipped catalogue is static, with [documented sources](../src/content/publicdomain/SOURCES.md). It does not seed the personal editor database.
 - Editor songs and arrangements use localStorage. Source text, chord anchors and musical timing remain distinct, so rendering and transposition do not overwrite imported text.
 - OLGA metadata and original documents use IndexedDB. Original text is loaded when a document is opened.
+- ZIP archives up to 64 MiB use a bounded compressed buffer to avoid many mobile Blob range round trips; larger archives keep range reads. Source verification runs in batches of 16 with SHA-256/CRC checks before any write. Backup export reports exact counts through an optional summary callback.
 - Backup restoration validates the complete archive before an explicit merge. Identical content is skipped and conflicting variants are preserved. A journal and IndexedDB receipt support recovery after interrupted writes.
 
 ## Installation and synchronization
 
-The build generates a manifest, service worker and integrity inventory. Core pages and their lazy chunks are precached; OCR/PDF assets have a separate opt-in offline pack. Updates coordinate open tabs and wait for active drafts, imports, backups and synchronization.
+The build generates a manifest, service worker and integrity inventory, including a semantic application version and a separate build ID. `release-version.mjs` assigns a monotonic patch from the Pages workflow run number; local builds use the package version. The running page version is never inferred from a newer worker. A session receipt confirms a completed update only after page reload and a matching controller version/build. Core pages and their lazy chunks are precached; OCR/PDF assets have a separate opt-in offline pack. Updates coordinate open tabs and wait for active drafts, imports, backups and synchronization. Handoff listeners live for the page lifetime. Activation has a bounded 20-second watchdog; recovery polls registration state instead of sending STATUS events that keep the old worker busy. An activation request reaching an already active worker is idempotent.
 
 The recommended transfer flow prepares a ZIP using the backup service and hands it to LocalSend via an explicit native-share click when the browser supports that file. A download is always available. LocalSend runs separately; receiving devices explicitly choose the ZIP, verify it and approve merging. No share-target registration, automatic discovery or delivery detection is claimed. Prepared files are held in page memory; no new storage format is introduced.
 

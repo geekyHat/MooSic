@@ -2,7 +2,7 @@ import {execFileSync} from 'node:child_process'
 import {createServer} from 'node:http'
 import {readFile} from 'node:fs/promises'
 import path from 'node:path'
-for(const version of ['a','b'])execFileSync(process.execPath,['node_modules/vite/bin/vite.js','build','--outDir',`.qa/pwa/${version}`],{env:{...process.env,MM_BUILD_ID:`test-${version}`,MM_BASE_PATH:'/MooSic/'},stdio:['ignore','ignore','inherit']})
+for(const version of ['a','b'])execFileSync(process.execPath,['node_modules/vite/bin/vite.js','build','--outDir',`.qa/pwa/${version}`],{env:{...process.env,MM_BUILD_ID:'test-commit',MM_APP_VERSION:version==='a'?'1.1.1':'1.1.2',MM_BASE_PATH:'/MooSic/'},stdio:['ignore','ignore','inherit']})
 let version='a'
 let fault=null
 let encodedLanguages=false

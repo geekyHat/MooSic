@@ -26,6 +26,8 @@ jobs:
           node-version: '24'
           cache: npm
       - run: npm ci --include=dev
+      - name: Assign the publication version
+        run: node scripts/release-version.mjs
       - name: Configure Pages
         id: pages
         uses: actions/configure-pages@v5

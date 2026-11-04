@@ -50,7 +50,12 @@ export async function bootstrap():Promise<AppCore>{
   let core:AppCore
   const backup=new LazyBackupService(async()=>{
     const {BrowserBackupService}=await import('@/infrastructure/backup/BrowserBackupService')
-    return new BrowserBackupService({songs,olga:repository,preferences:()=>({...core.settings.getSnapshot(),enabled:[...core.enabled]}),afterRestore:async()=>{}})
+    return new BrowserBackupService({songs,olga:repository,preferences:()=>({...core.settings.getSnapshot(),enabled:[...core.enabled]}),afterRestore:async preferencesRestored=>{
+      await olga.initialize()
+      if(!preferencesRestored&&olga.entries.length&&core.registry.get('content-olga'))await core.enablePlugin('content-olga')
+      if(!preferencesRestored&&songs.list().length&&core.registry.get('content-user'))await core.enablePlugin('content-user')
+      await core.reloadLibrary()
+    }})
   })
   const sync=new LazyPeerSyncService(isSecureContext&&'RTCPeerConnection'in window,invitation.code,async()=>{
     const {BrowserPeerSyncService}=await import('@/infrastructure/sync/BrowserPeerSyncService')

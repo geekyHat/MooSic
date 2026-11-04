@@ -6,7 +6,7 @@ export interface BackupDocument {entry:OlgaEntry;file:string;sha256:string}
 export interface BackupManifest {format:'musicmaestro-backup';version:1;createdAt:string;songs:UserSong[];preferences?:BackupPreferences;documents:BackupDocument[]}
 export const BACKUP_LIMITS={compressed:256*1024*1024,expanded:532*1024*1024,manifest:20*1024*1024,document:2*1024*1024,documents:60000,songs:10000}
 export class BackupError extends Error {
-  readonly code:'format'|'version'|'size'|'corrupt'|'storage'|'busy'|'changed'
+  readonly code:'format'|'version'|'size'|'corrupt'|'storage'|'busy'|'changed'|'empty'
   constructor(code:BackupError['code']){super(`Backup: ${code}`);this.code=code}
 }
 export function validPreferences(value:unknown):value is BackupPreferences {

@@ -11,7 +11,7 @@ const source='Original OLGA credits\r\n[Am]Original song text\r\n'
 const archive=()=>Buffer.from(zipSync({'manifest.json':strToU8(JSON.stringify({format:'musicmaestro-backup',version:1,createdAt:'2026-11-02T00:00:00.000Z',songs:[song,tab],documents:[{file:'olga/000000.txt',sha256:createHash('sha256').update(source).digest('hex'),entry:{id:'transfer-olga',title:'OLGA study',baseTitle:'OLGA study',artist:'LocalSend Artist',artistFolder:'localsend artist',instrument:'Chitarra / accordi',category:'main',path:'main/l/localsend_artist/study.crd',format:'crd',digest:'source-digest',sourceKey:'source-key'}}]})),'olga/000000.txt':strToU8(source)}))
 const panel=(page:Page)=>page.getByRole('region',{name:'Transfer with LocalSend',exact:true})
 const prepared=(page:Page)=>page.getByLabel('Library ready to transfer',{exact:true})
-async function prepare(page:Page){await page.goto('/#/settings');await panel(page).getByRole('button',{name:'Prepare library file',exact:true}).click();await expect(prepared(page)).toBeVisible()}
+async function prepare(page:Page){await page.addInitScript(song=>{if(!localStorage.getItem('mm:user-songs'))localStorage.setItem('mm:user-songs',JSON.stringify([song]))},song);await page.goto('/#/settings');await panel(page).getByRole('button',{name:'Prepare library file',exact:true}).click();await expect(prepared(page)).toBeVisible()}
 async function stored(page:Page){return page.evaluate(()=>JSON.parse(localStorage.getItem('mm:user-songs')??'[]'))}
 
 test('a downloaded LocalSend library preserves TAB and original OLGA sources and merges on an independent device without duplication',async({page,browser})=>{
@@ -21,7 +21,7 @@ test('a downloaded LocalSend library preserves TAB and original OLGA sources and
   await page.getByRole('button',{name:'Merge into library',exact:true}).click();await page.getByRole('button',{name:'Reopen app',exact:true}).click()
   await prepare(page)
   const download=page.waitForEvent('download');await prepared(page).getByRole('button',{name:'Save file for LocalSend',exact:true}).click()
-  const received=await download;expect(received.suggestedFilename()).toMatch(/^MooSic-library-\d{4}-\d{2}-\d{2}\.zip$/)
+  const received=await download;expect(received.suggestedFilename()).toMatch(/^MooSic-library-\d{4}-\d{2}-\d{2}-\d{6}-[a-f0-9]{6}\.zip$/)
   const buffer=await readFile((await received.path())!),files=unzipSync(buffer),manifest=JSON.parse(strFromU8(files['manifest.json']))
   expect(manifest.songs).toEqual([song,tab]);expect(strFromU8(files[manifest.documents[0].file])).toBe(source)
   const existing={...song,id:'phone-song',name:'Phone study'}
@@ -68,7 +68,7 @@ test('native file sharing requires its own click; cancellation and failure keep 
  const calls=await page.evaluate(()=>Reflect.get(window,'shareCalls'));expect(calls).toHaveLength(3)
  expect(calls.every((call:{active:boolean;bytes:number})=>call.active&&call.bytes>0)).toBe(true)
  await prepared(page).getByRole('button',{name:'Dismiss prepared file',exact:true}).click();await expect(prepared(page)).toHaveCount(0)
- expect(await stored(page)).toEqual([])
+ expect(await stored(page)).toEqual([song])
 })
 
 for(const mode of ['missing','unsupported','throws'])test(`download remains available when native sharing is ${mode}`,async({page})=>{
@@ -83,6 +83,7 @@ for(const mode of ['missing','unsupported','throws'])test(`download remains avai
 })
 
 test('Italian transfer instructions work at 320px, explain the separate app and reject invalid imports before writing',async({page},testInfo)=>{
+ await page.addInitScript(song=>localStorage.setItem('mm:user-songs',JSON.stringify([song])),song)
  await page.setViewportSize({width:320,height:900});await page.goto('/#/settings')
  await page.getByRole('combobox',{name:'Language',exact:true}).selectOption('it')
  const region=page.getByRole('region',{name:'Trasferisci con LocalSend',exact:true})
@@ -94,7 +95,7 @@ test('Italian transfer instructions work at 320px, explain the separate app and 
  const axe=await new AxeBuilder({page}).include('[aria-labelledby="library-transfer-title"]').analyze();expect(axe.violations.filter(item=>['serious','critical'].includes(item.impact??''))).toEqual([])
  await region.scrollIntoViewIfNeeded();await page.screenshot({path:testInfo.outputPath('localsend-it-320.png'),fullPage:true})
  await region.getByLabel('File della libreria ricevuta',{exact:true}).setInputFiles({name:'bad.zip',mimeType:'application/zip',buffer:Buffer.from('invalid')})
- await expect(page.getByRole('alert')).toBeVisible();expect(await stored(page)).toEqual([])
+ await expect(page.getByRole('alert')).toBeVisible();expect(await stored(page)).toEqual([song])
  await expect(page.getByLabel('Libreria pronta per il trasferimento',{exact:true})).toHaveCount(0)
 })
 
@@ -143,4 +144,44 @@ test('an installed app resumes to LocalSend with QR controls closed even when an
  await panel(page).getByRole('button',{name:'Prepare library file',exact:true}).click()
  await expect(prepared(page)).toBeVisible()
  expect(await stored(page)).toEqual([song])
+})
+
+test('empty transfers explain which browser library to use and do not produce a misleading ZIP',async({page})=>{
+ await page.goto('/#/settings')
+ await panel(page).getByRole('button',{name:'Prepare library file',exact:true}).click()
+ await expect(panel(page).getByRole('alert')).toContainText('No songs or OLGA documents to transfer')
+ await expect(prepared(page)).toHaveCount(0)
+ const empty=Buffer.from(zipSync({'manifest.json':strToU8(JSON.stringify({format:'musicmaestro-backup',version:1,createdAt:new Date().toISOString(),songs:[],documents:[]}))}))
+ await panel(page).getByLabel('Received library file',{exact:true}).setInputFiles({name:'empty.zip',mimeType:'application/zip',buffer:empty})
+ await expect(panel(page).getByRole('alert')).toContainText('select the correct file')
+ await expect(page.getByLabel('Backup preview',{exact:true})).toHaveCount(0)
+ expect(await stored(page)).toEqual([])
+})
+
+test('an OLGA-only transfer shows its total and reimport explains that the contents are already present',async({page})=>{
+ await page.addInitScript(()=>localStorage.setItem('mm:settings',JSON.stringify({locale:'en',theme:'theme-default',enabled:['instrument-guitar','theme-default','storage-local','parser-abc','renderer-tab','renderer-notation','content-publicdomain','content-user'],config:{}})))
+ const files=unzipSync(archive()),manifest=JSON.parse(strFromU8(files['manifest.json']))
+ manifest.songs=[];files['manifest.json']=strToU8(JSON.stringify(manifest));const buffer=Buffer.from(zipSync(files))
+ await page.goto('/#/settings')
+ for(let round=0;round<2;round++){
+  await panel(page).getByLabel('Received library file',{exact:true}).setInputFiles({name:'olga-only.zip',mimeType:'application/zip',buffer})
+  await expect(page.getByLabel('Backup preview',{exact:true})).toContainText('1 items in this file')
+  await page.getByRole('button',{name:'Merge into library',exact:true}).click()
+  const dialog=page.getByRole('dialog',{name:'Backup restored',exact:true})
+  await expect(dialog).toContainText(round?'0 items added':'1 items added')
+  if(round)await expect(dialog).toContainText('already contains every item in this file')
+  expect(await page.evaluate(()=>JSON.parse(localStorage.getItem('mm:settings')!).enabled.includes('content-olga'))).toBe(true)
+  await page.getByRole('button',{name:'Reopen app',exact:true}).click()
+ }
+ await page.getByRole('navigation',{name:'Main navigation',exact:true}).getByRole('button',{name:'Library',exact:true}).click()
+ await expect(page.locator('.mm-artist').filter({hasText:'LocalSend Artist'})).toBeVisible()
+})
+
+test('a valid ZIP with altered source text fails SHA validation before any library write',async({page})=>{
+ const files=unzipSync(archive());files['olga/000000.txt']=strToU8(source+'tampered')
+ await page.goto('/#/settings')
+ await panel(page).getByLabel('Received library file',{exact:true}).setInputFiles({name:'changed.zip',mimeType:'application/zip',buffer:Buffer.from(zipSync(files))})
+ await expect(page.getByRole('alert')).toContainText('invalid data')
+ await expect(page.getByLabel('Backup preview',{exact:true})).toHaveCount(0)
+ expect(await stored(page)).toEqual([])
 })

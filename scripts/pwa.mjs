@@ -10,12 +10,10 @@ function publicFiles(directory,prefix='') {
   return readdirSync(directory,{withFileTypes:true}).flatMap(entry=>entry.isDirectory()?publicFiles(path.join(directory,entry.name),prefix+entry.name+'/'):[{name:prefix+entry.name,bytes:readFileSync(path.join(directory,entry.name))}])
 }
 /** Deterministic precache inventory: the large OCR pack is a separate, explicit download. */
-export function pwa() {
+export function pwa({appVersion,appBuild}) {
   let base='/'
-  const appBuild=process.env.MM_BUILD_ID??process.env.GITHUB_SHA??Date.now().toString(36)
   return {
     name:'moosic-pwa',apply:'build',enforce:'post',
-    config(){return {define:{__APP_BUILD__:JSON.stringify(appBuild)}}},
     configResolved(config){base=config.base},
     generateBundle: {
       order:'post',
@@ -34,7 +32,7 @@ export function pwa() {
         const core=inventory.filter(file=>!file.url.includes('/scan-assets/')&&!file.url.includes('/sounds/')&&!file.url.includes('/icons/MooSic-icons/'))
         const ocr=inventory.filter(file=>file.url.includes('/scan-assets/'))
         const version=sha(JSON.stringify(inventory)).slice(0,16)
-        const config={base,version,appBuild,core,ocr}
+        const config={base,version,appBuild,appVersion,core,ocr}
         this.emitFile({type:'asset',fileName:'offline-inventory.json',source:JSON.stringify(config,null,2)})
         const worker=readFileSync(path.join(root,'src/infrastructure/pwa/service-worker.js'),'utf8').replace('/*__PWA_CONFIG__*/',JSON.stringify(config))
         this.emitFile({type:'asset',fileName:'sw.js',source:worker})

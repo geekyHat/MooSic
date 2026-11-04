@@ -1,2 +1,2 @@
 import type { Plugin } from 'vite'
-export function pwa(): Plugin
+export function pwa(release:{appVersion:string;appBuild:string}): Plugin

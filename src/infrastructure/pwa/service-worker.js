@@ -76,28 +76,46 @@ async function canUpdate(client) {
     client.postMessage({type:'CAN_UPDATE'},[channel.port2])
   })
 }
-async function activateUpdate(port) {
+let activation=null
+async function activeVersion(){
+  const active=self.registration.active
+  if(!active)return null
+  return new Promise(resolve=>{
+    const channel=new MessageChannel(),timer=setTimeout(()=>{channel.port1.close();resolve(null)},3000)
+    channel.port1.onmessage=event=>{clearTimeout(timer);channel.port1.close();resolve(event.data?.version)}
+    active.postMessage({type:'STATUS'},[channel.port2])
+  })
+}
+async function activateUpdate() {
+  // A stale waiting-worker reference can already be active when this request
+  // arrives. Freezing clients then waiting for another controllerchange hangs.
+  if(await activeVersion()===config.version)return {ok:true,alreadyActive:true}
+
   const clients=await allClients(),allowed=await Promise.all(clients.map(canUpdate))
   if(allowed.some(value=>!value)) {
     await announce({type:'UPDATE_CANCELLED'})
-    port.postMessage({ok:false,error:'busy-tabs'})
-    return
+    return {ok:false,error:'busy-tabs'}
   }
-  await announce({type:'RELOAD_ON_ACTIVATE'})
-  port.postMessage({ok:true})
-  await self.skipWaiting()
+  await announce({type:'RELOAD_ON_ACTIVATE',appVersion:config.appVersion,appBuild:config.appBuild})
+  // Finish this ExtendableMessageEvent before activation. Waiting here can
+  // leave the new worker blocked by its own activation request.
+  void self.skipWaiting().catch(()=>announce({type:'UPDATE_CANCELLED'}))
+  return {ok:true}
 }
 self.addEventListener('message',event=>{
   const port=event.ports[0],type=event.data?.type
   if(!port)return
   const run=async()=>{
     try {
-      if(type==='STATUS')port.postMessage({ok:true,version:config.version,coreReady:await complete(config.core),ocrReady:await complete(config.ocr),ocrBytes:config.ocr.reduce((sum,file)=>sum+file.bytes,0)})
+      if(type==='STATUS')port.postMessage({ok:true,version:config.version,appVersion:config.appVersion,appBuild:config.appBuild,coreReady:await complete(config.core),ocrReady:await complete(config.ocr),ocrBytes:config.ocr.reduce((sum,file)=>sum+file.bytes,0)})
       if(type==='DOWNLOAD_OCR') {
         if(!downloading)downloading=download(config.ocr,progress=>{void announce({type:'OCR_PROGRESS',...progress})}).finally(()=>{downloading=null})
         await downloading;await (await caches.open(cacheName)).put(packMarker,new Response('ready'));port.postMessage({ok:true})
       }
-      if(type==='ACTIVATE_UPDATE')await activateUpdate(port)
+      if(type==='ACTIVATE_UPDATE'){
+        activation??=activateUpdate().finally(()=>{activation=null})
+        port.postMessage(await activation)
+      }
       if(type==='CLEAN_OLD_CACHES') {
         // Only delete old code after every open page reports this build. Never touch IndexedDB/localStorage.
         const clients=await allClients()
@@ -106,14 +124,14 @@ self.addEventListener('message',event=>{
           channel.port1.onmessage=e=>{clearTimeout(timer);channel.port1.close();resolve(e.data?.version)}
           client.postMessage({type:'APP_VERSION'},[channel.port2])
         })))
-        if(versions.every(version=>version===config.appBuild))for(const key of await caches.keys()){
+        if(versions.every(version=>version===config.appBuild+'/'+config.appVersion))for(const key of await caches.keys()){
           // An older active worker must never erase a newer worker's waiting precache.
           if(self.registration.installing||self.registration.waiting)break
           if(key.startsWith(namespace)&&key!==cacheName)await caches.delete(key)
         }
         port.postMessage({ok:true})
       }
-    }catch(error){port.postMessage({ok:false,error:String(error?.message??error)})}
+    }catch(error){if(type==='ACTIVATE_UPDATE')await announce({type:'UPDATE_CANCELLED'});port.postMessage({ok:false,error:String(error?.message??error)})}
     finally{port.close()}
   }
   event.waitUntil(run())

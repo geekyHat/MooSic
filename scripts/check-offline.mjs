@@ -2,6 +2,7 @@ import {readFileSync} from 'node:fs'
 import {createHash} from 'node:crypto'
 import {gunzipSync} from 'node:zlib'
 const directory=process.argv[2]??'dist',inventory=JSON.parse(readFileSync(`${directory}/offline-inventory.json`,'utf8'))
+if(!/^\d+\.\d+\.\d+$/.test(inventory.appVersion)||typeof inventory.appBuild!=='string'||!inventory.appBuild)throw new Error('Missing release version/build metadata')
 for(const file of [...inventory.core,...inventory.ocr]){
  if(!file.url.startsWith(inventory.base)||file.url.includes('..'))throw new Error(`Invalid offline path: ${file.url}`)
  const bytes=readFileSync(`${directory}/${file.url.slice(inventory.base.length)}`)

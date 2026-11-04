@@ -1,10 +1,11 @@
 {
   "name": "moosic",
   "private": true,
-  "version": "0.1.0",
+  "version": "1.1.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "version:patch": "npm version patch --no-git-tag-version",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "test": "playwright test",

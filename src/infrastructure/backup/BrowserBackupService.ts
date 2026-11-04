@@ -8,7 +8,7 @@ import type { IndexedOlgaRepository } from '@/infrastructure/persistence/Indexed
 import { createBackupZip, openBackupZip, sha256 } from './backupZip'
 import { backupLock,idbRun,journalDatabase,LOCAL_BACKUP_KEYS,rollbackLocal,type RestoreJournal } from './restoreJournal'
 
-interface Dependencies {songs:SongService;olga:IndexedOlgaRepository;preferences:()=>BackupPreferences;afterRestore:()=>Promise<void>}
+interface Dependencies {songs:SongService;olga:IndexedOlgaRepository;preferences:()=>BackupPreferences;afterRestore:(preferencesRestored?:boolean)=>Promise<void>}
 const encoder=new TextEncoder(),decoder=new TextDecoder('utf-8',{fatal:true})
 async function libraryLocks<T>(action:()=>Promise<T>):Promise<T>{
   return backupLock(()=>navigator.locks?navigator.locks.request('musicmaestro:user-songs',()=>navigator.locks.request('musicmaestro-olga-import',action)):action())
@@ -49,16 +49,22 @@ export class BrowserBackupService implements BackupService {
       }
     }
     options.signal.throwIfAborted();parseBackupManifest(manifest)
-    return zip.finish(manifest)
+    const blob=zip.finish(manifest)
+    options.summary?.({createdAt:manifest.createdAt,songs:manifest.songs.length,documents:manifest.documents.length})
+    return blob
   }))
   prepare=(file:File,options:BackupOptions)=>this.run(async()=>{
     this.prepared=null
     let archive:Awaited<ReturnType<typeof openBackupZip>>
     try{archive=await openBackupZip(file,options.signal)}catch(error){if(error instanceof BackupError)throw error;throw new BackupError('corrupt')}
-    for(const [index,document] of archive.manifest.documents.entries()){
-      options.signal.throwIfAborted()
-      try{const bytes=await archive.read(document.file);decoder.decode(bytes);if(await sha256(bytes)!==document.sha256)throw new BackupError('corrupt')}catch(error){if(options.signal.aborted)throw error;throw new BackupError('corrupt')}
-      options.progress({phase:'verify',completed:index+1,total:archive.manifest.documents.length})
+    // Bounded parallel reads avoid a file-reader/crypto round trip per document
+    // serializing large mobile archives for minutes. No writes occur here.
+    for(let start=0;start<archive.manifest.documents.length;start+=16){
+      await Promise.all(archive.manifest.documents.slice(start,start+16).map(async document=>{
+        options.signal.throwIfAborted()
+        try{const bytes=await archive.read(document.file);decoder.decode(bytes);if(await sha256(bytes)!==document.sha256)throw new BackupError('corrupt')}catch(error){if(options.signal.aborted)throw error;throw new BackupError('corrupt')}
+      }))
+      options.progress({phase:'verify',completed:Math.min(start+16,archive.manifest.documents.length),total:archive.manifest.documents.length})
     }
     const token=crypto.randomUUID();this.prepared={file,manifest:archive.manifest,token}
     return {token,createdAt:archive.manifest.createdAt,songs:archive.manifest.songs.length,documents:archive.manifest.documents.length,hasPreferences:!!archive.manifest.preferences} satisfies BackupPreview
@@ -102,7 +108,7 @@ export class BrowserBackupService implements BackupService {
       options.signal.throwIfAborted()
       await this.commit(retained,batch,{key:'restore',id:batch,previous,next})
       this.prepared=null
-      await this.dependencies.afterRestore().catch(()=>{})
+      await this.dependencies.afterRestore(preferences&&!!archive.manifest.preferences).catch(()=>{})
       return {songsAdded:merge.added,songsSkipped:merge.skipped,documentsAdded:retained.length,documentsSkipped:duplicates.size} satisfies RestoreResult
     }catch(error){await olga.discard(batch).catch(()=>{});throw error}
   }))

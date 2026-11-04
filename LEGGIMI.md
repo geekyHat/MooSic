@@ -7,7 +7,7 @@
 
 App locale per studiare la chitarra nel browser, con catalogo, tablature, notazione standard ed editor di canzoni. Non richiede account o backend applicativo.
 
-Versione applicazione: **0.1.0** · Documentazione aggiornata: **2026-11-02**.
+Versione applicazione: **1.1.1** · Documentazione aggiornata: **2026-11-02**.
 
 [Repository GitHub](https://github.com/geekyHat/MooSic) · [English](README.md) · [Architettura](docs/ARCHITECTURE.md) · [Test](docs/TESTING.md) · [Sincronizzazione](docs/PEER-SYNC.md)
 
@@ -70,11 +70,15 @@ Aprire l’indirizzo HTTPS dell’app pubblicata, poi **Impostazioni → Install
 
 Prima di scollegarsi attendere **Libreria e lettura pronte offline** nelle Impostazioni. Vengono preparate tutte le pagine, diagrammi, trasposizione, autoscroll, editor e importazioni locali, senza doverle aprire una per una. **Scarica strumenti foto/PDF offline** prepara anche OCR italiano/inglese, font e decoder PDF (circa 20 MB). Un download incompleto si può riprovare; lo stato pronto compare soltanto dopo la verifica. Il server di sviluppo non registra un service worker. I campioni audio dell’editor non fanno parte del pacchetto offline.
 
-La ricerca degli aggiornamenti avviene all’avvio, al ritorno online e periodicamente mentre l’app è aperta. Una nuova versione scaricata aspetta **Installa aggiornamento**: salvare o annullare le bozze e terminare le importazioni in tutte le schede dell’app. L’aggiornamento coordina le schede prima di ricaricarle; conserva brani, documenti OLGA, preferenze e strumenti di riconoscimento già scaricati.
+**Versioni riconoscibili:** nelle Impostazioni compaiono versione e build della pagina in uso, oltre alla versione/build disponibile. GitHub Pages assegna `major.minor.N`: major/minor derivano da `package.json` e N è il numero di esecuzione del workflow di pubblicazione, mai inferiore alla patch di base. Una pubblicazione successiva aumenta la patch; una riesecuzione mantiene lo stesso numero. La build locale usa la versione del pacchetto; `npm run version:patch` incrementa la base senza creare tag Git. Il messaggio di aggiornamento completato compare soltanto quando è stata ricaricata la release prevista e il worker che controlla la pagina conferma la stessa versione/build.
+
+La ricerca degli aggiornamenti avviene all’avvio, al ritorno online e periodicamente mentre l’app è aperta. L’attivazione ha un limite di recupero di 20 secondi: se si blocca, la pagina viene sbloccata e permette di riprovare. Il recupero funziona anche quando manca l’evento di cambio del worker. Se una vecchia installazione è già ferma sulla sua schermata di aggiornamento, chiudere e riaprire l’app una volta, poi riprovare dalle Impostazioni; non cancellare i dati del sito. Una nuova versione scaricata aspetta **Installa aggiornamento**: salvare o annullare le bozze e terminare le importazioni in tutte le schede dell’app. L’aggiornamento coordina le schede prima di ricaricarle; conserva brani, documenti OLGA, preferenze e strumenti di riconoscimento già scaricati.
 
 **Proteggi dati sul dispositivo** richiede al browser l’archiviazione persistente. La concessione non è garantita e non impedisce la cancellazione manuale dei dati: mantenere un backup fuori dal dispositivo.
 
 ## Backup completo e trasferimento fra dispositivi
+
+Il trasferimento LocalSend mostra il numero effettivo di brani e documenti OLGA nello ZIP e usa nomi con data, ora e suffisso casuale per distinguere più esportazioni. Se la libreria musicale è vuota, il percorso di trasferimento lo segnala invece di produrre uno ZIP ambiguo: verificare browser e indirizzo/origine corretti. I normali backup di sole preferenze restano possibili. Anteprima e risultato mostrano anche il totale complessivo: **0 brani dell’editor + 28.455 documenti OLGA significa 28.455 elementi**, non un archivio vuoto. Se tutti gli elementi sono già presenti viene indicato esplicitamente. Dopo l’unione viene aggiornata anche la libreria in memoria; riaprendo l’app si applicano le eventuali preferenze ripristinate.
 
 In **Impostazioni → Scarica backup completo** si ottiene uno ZIP locale con canzoni/arrangiamenti dell’editor, alias degli artisti, testi originali importati, documenti OLGA e preferenze. Non vengono incluse bozze non salvate né foto/PDF originali: conservare separatamente questi ultimi. Il backup non è cifrato e non viene inviato a nessun servizio.
 

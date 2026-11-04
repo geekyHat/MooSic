@@ -58,13 +58,13 @@ test('coordinated update waits for a dirty tab, preserves libraries and keeps do
  const notice=page.getByRole('complementary',{name:'Update available',exact:true});await expect(notice).toBeVisible({timeout:30000});await notice.getByRole('button',{name:'Install update',exact:true}).click()
  await expect(notice.getByRole('alert')).toContainText('every open tab');await expect(peer.getByLabel('Song name',{exact:true})).toHaveValue('Unsaved draft')
  const third=await context.newPage();await third.goto(base+'#/settings');await expect(third.getByText('App ready offline, including photos and PDFs',{exact:true})).toBeVisible()
- const inventory=await (await page.request.get(base+'offline-inventory.json')).json();expect(inventory.appBuild).toBe('test-b')
+ const inventory=await (await page.request.get(base+'offline-inventory.json')).json();expect(inventory.appBuild).toBe('test-commit')
  // Opening another old-build tab runs cache cleanup while the new version is waiting.
  await expect.poll(()=>page.evaluate(async version=>(await caches.keys()).some(key=>key.endsWith(version)),inventory.version)).toBe(true)
  await peer.getByLabel('Song name',{exact:true}).fill('Offline study');await peer.locator('nav button').nth(3).click();await expect(peer.getByRole('heading',{name:'Backup and restore',exact:true})).toBeVisible()
  await context.setOffline(true)
  await notice.getByRole('button',{name:'Install update',exact:true}).click()
- await expect(notice).toHaveCount(0,{timeout:30000});await expect(page.getByText('App ready offline, including photos and PDFs',{exact:true})).toBeVisible()
+ await expect(page.getByLabel('Version in use',{exact:true})).toContainText('1.1.2',{timeout:30000});await expect(notice).toHaveCount(0);await expect(page.getByText('App ready offline, including photos and PDFs',{exact:true})).toBeVisible()
  const info=await page.evaluate(async()=>{const registration=await navigator.serviceWorker.ready;return {waiting:!!registration.waiting,keys:await caches.keys(),songs:JSON.parse(localStorage.getItem('mm:user-songs')??'[]'),script:registration.active?.scriptURL}})
  expect(info.waiting).toBe(false);expect(info.songs).toEqual([song]);expect(info.script).toBe(old)
  expect(info.keys.some(key=>key.endsWith(inventory.version))).toBe(true)
@@ -154,4 +154,66 @@ test('first QR access prepares the app and resumes real pairing after an install
   expect(requests.every(url=>!url.includes('sync=')&&!url.includes('MM-SYNC1'))).toBe(true)
   await app.goto(base);await expect(app).toHaveURL(/#\/library$/)
  }finally{await second.close()}
+})
+
+test('an activation request delivered to the already active worker does not freeze the app',async({page})=>{
+ await ready(page)
+ const result=await page.evaluate(()=>new Promise(resolve=>{
+  const channel=new MessageChannel();channel.port1.onmessage=event=>{channel.port1.close();resolve(event.data)}
+  navigator.serviceWorker.controller!.postMessage({type:'ACTIVATE_UPDATE'},[channel.port2])
+ }))
+ expect(result).toEqual({ok:true,alreadyActive:true})
+ await expect(page.getByRole('alert').filter({hasText:'Updating…'})).toHaveCount(0)
+ await expect(page.getByRole('button',{name:'Check for updates',exact:true})).toBeEnabled()
+ await expect(page.getByLabel('Version in use',{exact:true})).toContainText('1.1.1')
+})
+
+test('activation completes even when controllerchange is missed and the new release stays installed',async({page,context})=>{
+ await page.addInitScript(()=>{
+  const add=ServiceWorkerContainer.prototype.addEventListener
+  ServiceWorkerContainer.prototype.addEventListener=function(type:string,listener:EventListenerOrEventListenerObject,options?:boolean|AddEventListenerOptions){
+   if(type!=='controllerchange')add.call(this,type,listener,options)
+  }
+ })
+ await ready(page);await switchVersion(page,'b')
+ await page.getByRole('button',{name:'Check for updates',exact:true}).click()
+ const notice=page.getByRole('complementary',{name:'Update available',exact:true})
+ await expect(notice).toContainText('1.1.1 → 1.1.2',{timeout:30000})
+ await notice.getByRole('button',{name:'Install update',exact:true}).click()
+ await expect(page.getByLabel('Version in use',{exact:true})).toContainText('1.1.2',{timeout:30000})
+ await expect(page.getByText('Update completed: 1.1.2',{exact:true})).toBeVisible()
+ await expect(notice).toHaveCount(0)
+ await context.setOffline(true);await page.reload()
+ await expect(page.getByLabel('Version in use',{exact:true})).toContainText('1.1.2')
+ await expect(notice).toHaveCount(0)
+})
+
+test('a stalled activation unlocks after its deadline and a retry safely completes',async({page})=>{
+ await page.addInitScript(()=>{
+  Reflect.set(window,'stallActivation',true)
+  const send=ServiceWorker.prototype.postMessage
+  ServiceWorker.prototype.postMessage=function(message:unknown,options?:Transferable[]|StructuredSerializeOptions){
+   const transfer=Array.isArray(options)?options:options?.transfer
+   if(message&&typeof message==='object'&&'type' in message&&message.type==='ACTIVATE_UPDATE'&&Reflect.get(window,'stallActivation')){
+    (transfer?.[0] as MessagePort)?.postMessage({ok:true});return
+   }
+   Reflect.apply(send,this,[message,transfer??[]])
+  }
+ })
+ await ready(page);await switchVersion(page,'b')
+ await page.getByRole('button',{name:'Check for updates',exact:true}).click()
+ const notice=page.getByRole('complementary',{name:'Update available',exact:true})
+ await expect(notice).toBeVisible({timeout:30000})
+ await page.clock.install()
+ await notice.getByRole('button',{name:'Install update',exact:true}).click()
+ await expect(page.getByRole('alert').filter({hasText:'Updating…'})).toBeVisible()
+ await page.clock.fastForward(21000)
+ await expect(page.getByRole('alert').filter({hasText:'Updating…'})).toHaveCount(0)
+ await expect(page.getByText('Activation did not finish in time. Retry the update.',{exact:true})).toBeVisible()
+ expect(await page.locator('.mm-shell').getAttribute('inert')).toBeNull()
+ await page.evaluate(()=>Reflect.set(window,'stallActivation',false))
+ await page.clock.resume()
+ await notice.getByRole('button',{name:'Install update',exact:true}).click()
+ await expect(page.getByLabel('Version in use',{exact:true})).toContainText('1.1.2',{timeout:30000})
+ await expect(notice).toHaveCount(0)
 })

@@ -1,5 +1,5 @@
 export function libraryFile(blob:Blob){
- return new File([blob],`MooSic-library-${new Date().toISOString().slice(0,10)}.zip`,{type:'application/zip'})
+ return new File([blob],`MooSic-library-${new Date().toISOString().slice(0,19).replace('T','-').replaceAll(':','')}-${crypto.randomUUID().slice(0,6)}.zip`,{type:'application/zip'})
 }
 export function canShareLibrary(file:File){
  try{return typeof navigator.share==='function'&&typeof navigator.canShare==='function'&&navigator.canShare({files:[file]})}catch{return false}
