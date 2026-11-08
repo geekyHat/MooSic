@@ -108,17 +108,17 @@
 .mm-locale { grid-column: -2; grid-row: 1; justify-self: end; }
 @media (max-width: 45rem) {
   .mm-header { grid-template-columns: minmax(0, 1fr) auto; gap: 0.5rem; }
-  .mm-nav { grid-column: 1 / -1; grid-row: 2; justify-self: stretch; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .mm-nav { grid-column: 1 / -1; grid-row: 2; justify-self: stretch; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); }
   .mm-logo { display: flex; align-items: center; gap: 0.375rem; padding-inline-end: 0.75rem; }
   .mm-brand-logo { width: 2.75rem; height: 2.75rem; object-fit: contain; }
   .mm-brand-name { display: block; color: #111111; font-size: 1.25rem; font-weight: 750; letter-spacing: -0.035em; }
 }
 @container (max-width: 600px) {
-  .mm-nav { grid-column: 1 / -1; grid-row: 2; justify-self: stretch; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .mm-nav { grid-column: 1 / -1; grid-row: 2; justify-self: stretch; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); }
   .mm-nav > button { min-width: 0; padding-inline: 0.25rem; font-size: 0.75rem; }
 }
-@container (max-width: 340px) {
-  .mm-nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@container (max-width: 440px) {
+  .mm-nav { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 .mm-renderer-panel, .mm-chord-sheet { min-width: 0; }
 .mm-chord-sheet { overflow-wrap: anywhere; }

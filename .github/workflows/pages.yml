@@ -39,6 +39,8 @@ jobs:
           npm run test:unit
       - name: Library, LocalSend transfer, encrypted sync, backup and history regressions
         run: npm run test:browser -- tests/backup.spec.ts tests/localsend.spec.ts tests/history.spec.ts tests/sync.spec.ts tests/sync-install.spec.ts tests/starter-catalog.spec.ts
+      - name: Guitar tuner audio, microphone lifecycle and accessibility
+        run: npm run test:browser -- tests/tuner.spec.ts
       - name: Real offline and two-version update checks
         run: npm run test:browser -- --config playwright.pwa.config.ts
       - name: Build for the repository URL

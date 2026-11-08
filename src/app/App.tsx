@@ -16,6 +16,7 @@ const Library=lazy(()=>import('@/features/library/LibraryPage').then(m=>({defaul
 const Practice=lazy(()=>import('@/features/practice/PracticePage').then(m=>({default:m.PracticeView})))
 const Editor=lazy(()=>import('@/features/editor/EditorPage').then(m=>({default:m.EditorView})))
 const Settings=lazy(()=>import('@/features/settings/SettingsPage').then(m=>({default:m.SettingsView})))
+const Tuner=lazy(()=>import('@/features/tuner/TunerPage').then(m=>({default:m.TunerView})))
 export type View=AppView
 export default function App({core}:{core:AppCore}){
  const store=useMemo(()=>({subscribe:core.subscribe.bind(core),getSnapshot:core.getSnapshot}),[core]);useAppSnapshot(store)
@@ -76,6 +77,7 @@ function AppShell({core}:{core:AppCore}){
        {view==='practice'&&(loadingCatalog?loading:!route.practice.songId?<p className="text-muted">{core.t('practice.select')}</p>:!targetArrangement?<section><h2>{core.locale==='it'?'Brano non disponibile':'Song unavailable'}</h2><p>{core.locale==='it'?'Il brano o l’arrangiamento non è presente nella libreria di questo dispositivo.':'This song or arrangement is not in this device’s library.'}</p><Button onClick={()=>navigate('library')}>{core.t('nav.library')}</Button></section>:!readyPractice?loading:<Practice core={core} scrollContainer={main} display={route.practice.display} onDisplayChange={display=>changePractice({display})} onArrangementChange={kind=>changePractice({kind,display:null})}/>)}
        {view==='editor'&&<Editor key={route.editorSongId??'index'} core={core} initialSongId={route.editorSongId} onSelectionChange={editorSongId=>{rememberScroll();navigation.navigate({...route,editorSongId})}} onOpenPractice={()=>{rememberScroll();navigation.navigate({...route,view:'practice',practice:currentPractice()})}}/>}
        {view==='settings'&&<Settings core={core}/>}
+       {view==='tuner'&&<Tuner locale={core.locale}/>}
      </div></Suspense></ChunkBoundary>
    </main><NotificationRegion core={core}/>
  </div>{core.pwa&&<PwaNotice core={core}/>}</>

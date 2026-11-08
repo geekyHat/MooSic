@@ -1,4 +1,4 @@
-export type AppView = 'library' | 'practice' | 'editor' | 'settings'
+export type AppView = 'library' | 'practice' | 'editor' | 'settings' | 'tuner'
 export type LibraryMode = 'artists' | 'songs' | 'tabs' | 'chords' | 'sheet'
 export type LibraryPanel = 'import' | 'olga' | 'scan' | 'merge' | null
 export interface LibraryLocation {
@@ -27,7 +27,7 @@ export function parseLocation(hash: string): AppLocation {
   const route = appLocation()
   if (hash.length>8192 || !hash.startsWith('#/')) return route
   const [path,query] = hash.slice(2).split('?')
-  route.view = oneOf(path,['library','practice','editor','settings'],'library')
+  route.view = oneOf(path,['library','practice','editor','settings','tuner'],'library')
   const params = new URLSearchParams(query)
   const text = (key: string, fallback = '') => (params.get(key) ?? fallback).slice(0,300)
   const id = (key: string) => text(key) || null

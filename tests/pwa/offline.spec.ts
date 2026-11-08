@@ -30,6 +30,10 @@ test('subpath manifest, verified precache and native install prompt support a fr
  await expect(cold.locator('.mm-artist').filter({hasText:'Offline Artist'})).toBeVisible()
  await cold.locator('.mm-artist').filter({hasText:'Offline Artist'}).getByRole('button',{name:'Open',exact:true}).click();await cold.locator('.mm-song').getByRole('button',{name:'Open',exact:true}).click()
  await expect(cold.locator('.mm-chord-sheet')).toContainText('Original offline words');await cold.getByRole('button',{name:'Up one semitone',exact:true}).click();await expect(cold.locator('.mm-chord-sheet')).toContainText('A#m')
+ await cold.getByRole('button',{name:'Tuner',exact:true}).click()
+ await expect(cold.getByRole('heading',{name:'Guitar tuner',exact:true})).toBeVisible()
+ await cold.getByRole('button',{name:/^String 6 E2/}).click()
+ await expect(cold.getByRole('button',{name:'Manual',exact:true})).toHaveAttribute('aria-pressed','true')
  for(const index of [2,3,0]){await cold.locator('nav button').nth(index).click();await expect(cold.locator('main')).not.toHaveText('Loading…')}
  await cold.reload();await expect(cold.locator('.mm-song')).toContainText('Offline study');await cold.goto(base+'#/library');await expect(cold.locator('.mm-artist').filter({hasText:'Offline Artist'})).toBeVisible()
  await cold.getByRole('button',{name:'import olga archive',exact:true}).click()

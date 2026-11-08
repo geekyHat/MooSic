@@ -16,6 +16,8 @@ npm run check:offline
 
 `quality` checks TypeScript, lint, architecture boundaries, unit tests, the production build and bundle budgets. `check:gates` injects temporary negative controls and removes them afterwards. Production tests require a prior build. PWA tests create two isolated builds under `.qa/pwa/` and exercise the real worker under a subdirectory, including cold offline launches, recognition assets, updates and first-install pairing.
 
+The guitar tuner has deterministic pitch tests for all six strings at 44.1/48/96 kHz, detuning, overtones, silence and noise, plus jitter, octave spikes, continuous peg movements and target hysteresis. [Implementation and open-source references](TUNER.md). `npm run test:browser -- tests/tuner.spec.ts` feeds a synthetic Web Audio stream through the actual analyzer and checks pitch feedback, manual/automatic selection, permission errors, cancellation, microphone cleanup, responsive layouts and accessibility. The offline cold-launch test also opens the tuner without a prior visit. These checks do not replace a listening check with a physical guitar and microphone, particularly on mobile Safari.
+
 Local Chromium can use `/usr/bin/chromium` or `CHROMIUM_PATH`; CI uses Playwright browser binaries. Linux WebKit may require the native libraries supplied by the official Playwright container. Automated browser tests do not substitute for testing on physical phones or Safari/iOS.
 
 Test output is written to `test-results/`, `playwright-report/`, `.qa/` or an explicitly selected output directory. These generated files are ignored. Visual reference images under `tests/visual/__screenshots__/` are versioned fixtures and must remain in the repository.

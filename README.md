@@ -7,7 +7,7 @@
 
 A local-first browser app for practising guitar, with a filterable library, tablature, standard notation and a song editor. No account or application backend is required.
 
-Base source version: **1.1.1** · Documentation updated: **2026-11-02**.
+Base source version: **1.1.1** · Documentation updated: **2026-11-08**.
 
 [GitHub repository](https://github.com/geekyHat/MooSic) · [Italian guide](LEGGIMI.md) · [Architecture](docs/ARCHITECTURE.md) · [Testing](docs/TESTING.md) · [Device sync](docs/PEER-SYNC.md)
 
@@ -19,6 +19,7 @@ I work in IT and develop MooSic in my spare time. If you enjoy the app, [buy me 
 
 - Installable PWA with offline reading, optional offline photo/PDF tools, coordinated updates, full local backup/restore and automatic GitHub Pages deployment. [Setup](#install-offline-updates-and-full-backup).
 - Public-domain catalog and locally saved songs; title/composer/genre filters.
+- **Guitar tuner:** open **Tuner → Tap to tune** and allow microphone access. Pluck one open string at a time; the needle shows whether to tune up or down and turns green within ±10 cents, with a ±250-cent scale and stabilized pitch/automatic string detection. Standard E2–A2–D3–G3–B3–E4 tuning, automatic detection or manual selection on a simple guitar neck with six strings and frets. Select a string manually when it is far out of tune. Audio stays on the device without recording or uploading; listening stops when leaving the page or hiding the app. Microphone access requires HTTPS (or localhost) and a compatible browser.
 - Browser **Back/Forward** restores app pages and library selections, including filters, letters, pagination and scroll position. Songs with one version and one available arrangement open directly in practice; multiple choices retain the version/arrangement picker.
 - Artist-first creation with existing/similar-name suggestions, shared artist cards across catalog and local songs, and an Edit in editor action in the library. Exact artist matches ignore case, accents and repeated spaces; similar names require explicit selection.
 - Local TAB/ChordPro file imports with editable preview, explicit artist matching, remembered aliases, numbered title conflicts, identical-copy detection and a Merge artists action. Imported source files remain available in practice.

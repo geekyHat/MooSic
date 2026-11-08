@@ -7,7 +7,7 @@
 
 App locale per studiare la chitarra nel browser, con catalogo, tablature, notazione standard ed editor di canzoni. Non richiede account o backend applicativo.
 
-Versione applicazione: **1.1.1** · Documentazione aggiornata: **2026-11-02**.
+Versione applicazione: **1.1.1** · Documentazione aggiornata: **2026-11-08**.
 
 [Repository GitHub](https://github.com/geekyHat/MooSic) · [English](README.md) · [Architettura](docs/ARCHITECTURE.md) · [Test](docs/TESTING.md) · [Sincronizzazione](docs/PEER-SYNC.md)
 
@@ -19,6 +19,7 @@ Lavoro in IT e sviluppo MooSic nel tempo libero. Se l’app ti è utile, puoi [o
 
 - PWA installabile, lettura offline, strumenti foto/PDF offline facoltativi, aggiornamenti coordinati, backup/ripristino completo e pubblicazione automatica su GitHub Pages. [Configurazione](#installazione-offline-e-aggiornamenti).
 - Libreria filtrabile per titolo, compositore e genere; contenuti pubblici e brani salvati dall'utente.
+- **Accordatore per chitarra:** aprire **Accordatore → Tocca per accordare** e consentire l’accesso al microfono. Pizzicare una corda a vuoto alla volta: l’indicatore segnala se alzare o abbassare la nota e diventa verde entro ±10 cent, con scala di ±250 cent e stabilizzazione della lettura e della corda automatica. Accordatura standard E2–A2–D3–G3–B3–E4, riconoscimento automatico oppure selezione manuale su un disegno essenziale del manico con sei corde e tasti. Se una corda è molto scordata, selezionarla manualmente. L’audio resta sul dispositivo, senza registrazioni o invii; l’ascolto si ferma uscendo dalla pagina o portando l’app in background. Servono HTTPS (oppure localhost) e un browser compatibile con il microfono.
 - **Indietro/Avanti del browser** ripristinano pagine e selezioni della libreria, inclusi filtri, lettere, paginazione e posizione di scorrimento. I brani con una sola versione e un solo arrangiamento disponibile si aprono direttamente in Pratica; con più possibilità rimane la schermata di scelta.
 - **Scansione foto/PDF:** importa testi stampati da JPG, PNG, WebP o PDF, oppure usa **Scatta foto** su un telefono compatibile. Riconoscimento locale in italiano/inglese, rotazione delle foto, anteprima delle pagine PDF e testo correggibile prima della conferma. [Uso e limiti](#scansionare-una-foto-o-un-pdf).
 - Arrangiamenti Tabs, Spartito e Accordi + testo con **autoscroll indipendente dall’audio**: avvio/pausa, velocità regolabile e ritorno all’inizio. Rimossi karaoke e comandi di riproduzione dalla vista di pratica.

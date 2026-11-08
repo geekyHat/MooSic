@@ -19,6 +19,7 @@ export function AppHeader({core,view,onNavigate,onHome}:{core:AppCore;view:View;
               ['practice', 'nav.practice'],
               ['editor', 'nav.editor'],
               ['settings', 'nav.settings'],
+              ['tuner', 'nav.tuner'],
             ] as [View, string][]
           ).map(([v, key]) => (
             <button
