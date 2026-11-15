@@ -11,6 +11,8 @@ export type GuitarString = typeof GUITAR_STRINGS[number]
 export type TuningDirection = 'low' | 'high' | 'tuned'
 export const TUNING_TOLERANCE = 10
 export const TUNER_RANGE = 250
+// Phone microphones can deliver an unprocessed guitar signal below -48 dBFS.
+export const TUNER_INPUT_FLOOR = 0.0005
 export const centsBetween = (frequency: number, target: number) => 1200 * Math.log2(frequency / target)
 /** A small exit margin prevents flickering at the edge of the green zone. */
 export const tuningDirection = (cents: number, previous: TuningDirection | null = null): TuningDirection => Math.abs(cents) <= (previous === 'tuned' ? 14 : TUNING_TOLERANCE) ? 'tuned' : cents < 0 ? 'low' : 'high'
@@ -55,7 +57,7 @@ export function createPitchDetector(sampleRate: number, frameSize = 4096) {
     mean /= samples.length
     for (let i = 0; i < samples.length; i++) { samples[i] -= mean; energy += samples[i] ** 2 }
     const level = Math.sqrt(energy / samples.length)
-    if (!Number.isFinite(level) || level < 0.004) return { frequency: null, level: Number.isFinite(level) ? level : 0 }
+    if (!Number.isFinite(level) || level < TUNER_INPUT_FLOOR) return { frequency: null, level: Number.isFinite(level) ? level : 0 }
     let sum = 0
     difference[0] = 1
     for (let lag = 1; lag <= maxLag; lag++) {

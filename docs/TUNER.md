@@ -12,6 +12,32 @@ The revised tuner uses:
 - Automatic target hysteresis: another string must be at least 80 cents closer before it replaces the current target. Manual selection fixes the target regardless of detected pitch.
 - A simple guitar-neck illustration with six strings, a nut and frets, without the realistic headstock details.
 
+## Android microphone input
+
+Microphone permission does not guarantee a usable waveform. The input gate is
+0.0005 RMS (about −66 dBFS), allowing quiet, unprocessed phone input while YIN
+still rejects non-periodic noise. The level indicator uses a square-root scale
+so quiet input remains visible. After three seconds without useful signal the
+tuner shows guidance; a muted media track is reported separately. Input can
+recover without restarting the tuner.
+
+The audio graph ends in a permanently zero-gain output to keep rendering active
+on mobile audio backends without playing the microphone through the speakers.
+Audio is resumed during the initial tap and again after microphone acquisition.
+If that second resume stalls for three seconds, the input is released and a
+retry is offered. This timeout starts only after capture is granted; it does not
+limit the time available to answer the permission prompt. Stop, navigation and
+page hiding release the stream and any pending audio-start timer.
+
+On Android, check the device-wide **Microphone access** privacy switch, the
+browser's Android app permission and the site's microphone permission. Installed
+PWAs also require permission. Bluetooth headsets may change which microphone is
+used. These checks are available in the tuner's expandable help.
+
+The mobile rendering path is a compatibility measure; desktop browser tests
+cannot establish which device-specific condition caused a real phone to return
+silence. Verify the published version on a physical phone after updating.
+
 ## Open-source research
 
 Inspected on 2026-11-08. Star counts are approximate popularity signals, not evidence of measurement accuracy.

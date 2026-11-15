@@ -8,28 +8,94 @@ declare global {
   }
 }
 
-async function microphone(page: Page, mode: 'normal' | 'denied' | 'deferred' | 'missing' | 'unsupported' = 'normal') {
+async function microphone(page: Page, mode: 'normal' | 'denied' | 'deferred' | 'missing' | 'unsupported' | 'suspended' | 'blocked-audio' | 'quiet' = 'normal') {
   await page.addInitScript(mode => {
     const NativeContext = window.AudioContext
     const state = window.tunerTest = { calls: 0, contexts: [] as AudioContext[], stream: null as MediaStream | null, frequency: (_hz: number) => {}, silence: () => {}, grant: () => {} }
-    window.AudioContext = new Proxy(NativeContext, { construct(target, args) { const context = Reflect.construct(target, args) as AudioContext; state.contexts.push(context); return context } })
+    window.AudioContext = new Proxy(NativeContext, { construct(target, args) {
+      const context = Reflect.construct(target, args) as AudioContext
+      state.contexts.push(context)
+      if (mode === 'blocked-audio' && state.contexts.length === 1) context.resume = () => new Promise<void>(() => {})
+      return context
+    } })
     if (mode === 'unsupported') { Object.defineProperty(navigator, 'mediaDevices', { value: undefined }); return }
     Object.defineProperty(navigator.mediaDevices, 'getUserMedia', { value: async () => {
       state.calls++
       if (mode === 'denied') throw new DOMException('Denied', 'NotAllowedError')
       if (mode === 'missing') throw new DOMException('Missing', 'NotFoundError')
       const context = new NativeContext(), oscillator = context.createOscillator(), gain = context.createGain(), destination = context.createMediaStreamDestination()
-      oscillator.frequency.value = 110; gain.gain.value = .2
+      const amplitude = mode === 'quiet' ? .002 : .2
+      oscillator.frequency.value = 110; gain.gain.value = amplitude
       oscillator.connect(gain); gain.connect(destination); oscillator.start()
       await context.resume()
-      state.frequency = hz => { oscillator.frequency.value = hz; gain.gain.value = .2 }
+      state.frequency = hz => { oscillator.frequency.value = hz; gain.gain.value = amplitude }
       state.silence = () => { gain.gain.value = 0 }
       state.stream = destination.stream
       if (mode === 'deferred') await new Promise<void>(resolve => { state.grant = resolve })
+      if (mode === 'suspended') await state.contexts[0].suspend()
       return destination.stream
     } })
   }, mode)
 }
+
+test('audio suspended while granting microphone permission resumes after capture starts', async ({ page }) => {
+  await microphone(page, 'suspended')
+  await page.goto('/#/tuner')
+  await page.getByRole('button', { name: 'Tap to tune', exact: true }).click()
+  await expect(page.locator('.mm-tuner-feedback')).toContainText('In tune!')
+  expect(await page.evaluate(() => window.tunerTest.calls)).toBe(1)
+  await page.getByRole('button', { name: 'Stop listening' }).click()
+  await expect.poll(() => page.evaluate(() => window.tunerTest.stream?.getTracks().every(track => track.readyState === 'ended'))).toBe(true)
+})
+
+test('blocked audio startup releases the microphone and offers a retry', async ({ page }) => {
+  await microphone(page, 'blocked-audio')
+  await page.goto('/#/tuner')
+  await page.getByRole('button', { name: 'Tap to tune', exact: true }).click()
+  await expect.poll(() => page.evaluate(() => !!window.tunerTest.stream)).toBe(true)
+  await expect(page.getByRole('alert')).toContainText('Audio could not start', { timeout: 7000 })
+  await expect(page.getByRole('button', { name: 'Tap to tune', exact: true })).toBeVisible()
+  await expect.poll(() => page.evaluate(() => window.tunerTest.stream?.getTracks().every(track => track.readyState === 'ended'))).toBe(true)
+  await expect.poll(() => page.evaluate(() => window.tunerTest.contexts.every(context => context.state === 'closed'))).toBe(true)
+  await page.getByRole('button', { name: 'Tap to tune', exact: true }).click()
+  await expect(page.locator('.mm-tuner-feedback')).toContainText('In tune!')
+  await expect(page.getByRole('alert')).toHaveCount(0)
+})
+
+test('a quiet phone-level input is recognized in a mobile viewport', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  await microphone(page, 'quiet')
+  await page.goto('/#/tuner')
+  await page.getByRole('button', { name: 'Tap to tune', exact: true }).click()
+  await expect(page.locator('.mm-tuner-feedback')).toContainText('In tune!')
+  await expect(page.locator('.mm-tuner-signal')).toHaveText('Audio signal detected')
+  await expect(page.getByRole('button', { name: /^String 5 A2/ })).toHaveAttribute('data-tuned', 'true')
+})
+
+test('permission alone does not claim a signal; silence and muted input give recoverable guidance', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  await microphone(page)
+  await page.goto('/#/tuner')
+  await page.getByRole('button', { name: 'Tap to tune', exact: true }).click()
+  await expect(page.locator('.mm-tuner-feedback')).toContainText('In tune!')
+  await page.evaluate(() => window.tunerTest.silence())
+  await expect(page.locator('.mm-tuner-signal')).toContainText('No usable microphone signal', { timeout: 7000 })
+  await expect(page.getByRole('button', { name: 'Stop listening' })).toBeVisible()
+  await page.getByText('No microphone signal on Android?', { exact: true }).click()
+  await expect(page.getByText('Enable “Microphone access”', { exact: false })).toBeVisible()
+  await page.screenshot({ path: `/tmp/moosic-android-input-help-${test.info().project.name}.png`, fullPage: true })
+  await page.evaluate(() => Object.defineProperty(window.tunerTest.stream!.getAudioTracks()[0], 'muted', { configurable: true, value: true }))
+  await expect(page.locator('.mm-tuner-mic')).toHaveText('Microphone muted')
+  await expect(page.locator('.mm-tuner-signal')).toContainText('The device muted the input')
+  await expect(page.locator('.mm-tuner-readings')).toHaveText('— Hz— cent')
+  await page.evaluate(() => {
+    Object.defineProperty(window.tunerTest.stream!.getAudioTracks()[0], 'muted', { configurable: true, value: false })
+    window.tunerTest.frequency(110)
+  })
+  await expect(page.locator('.mm-tuner-feedback')).toContainText('In tune!')
+  await expect(page.locator('.mm-tuner-signal')).toHaveText('Audio signal detected')
+  expect(await page.evaluate(() => window.tunerTest.calls)).toBe(1)
+})
 
 test('live audio indicates flat, sharp and tuned; manual string selection and silence reset work', async ({ page }) => {
   await microphone(page)

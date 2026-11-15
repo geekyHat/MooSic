@@ -201,7 +201,7 @@ The GitHub workflow stores screenshots, traces and bundle reports. Automated che
 
 Editor songs live in localStorage for the current browser origin (`mm:user-songs`); settings and recovery copies use separate keys. Changing origin/port/browser or clearing site data can make that library unavailable. Export recovery data before deleting it. Recovery is not cloud backup and cannot repair an uninterpretable record automatically. No analytics or repertoire upload service is included.
 
-Use original, public-domain or authorised repertoire. Coach/microphone pitch detection, MusicXML import, cloud sync and automatic vocal alignment are **not implemented**. Ukulele remains reserved. Chord parsing/diagrams do not cover every possible symbol; unavailable diagrams are shown explicitly.
+Use original, public-domain or authorised repertoire. Guided coach feedback, MusicXML import, cloud sync and automatic vocal alignment are **not implemented**. Microphone pitch detection is available in the guitar tuner. Ukulele remains reserved. Chord parsing/diagrams do not cover every possible symbol; unavailable diagrams are shown explicitly.
 
 ## License
 

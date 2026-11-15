@@ -31,6 +31,20 @@ test('silence, DC offset, very quiet notes and deterministic broadband noise do 
   assert.equal(detect(noise).frequency, null)
   assert.equal(detect(new Float32Array(20)).frequency, null)
 })
+test('quiet unprocessed phone input is recognized without treating quiet broadband noise as a string', () => {
+  for (const rate of [44100, 48000, 96000]) {
+    const size = 2 ** Math.ceil(Math.log2(rate * .085)), detect = createPitchDetector(rate, size)
+    for (const string of GUITAR_STRINGS) {
+      const input = tone(string.frequency, rate, true, size).map(value => value * .003)
+      const result = detect(input)
+      assert.ok(result.level < .004 && result.level > .0005)
+      assert.ok(result.frequency && Math.abs(centsBetween(result.frequency, string.frequency)) < 3)
+    }
+    let seed = 123456
+    const noise = Float32Array.from({ length: size }, () => { seed = (1664525 * seed + 1013904223) >>> 0; return (seed / 2 ** 32 - .5) * .006 })
+    assert.equal(detect(noise).frequency, null)
+  }
+})
 test('pitch feedback has correct direction and distinguishes the two E strings', () => {
   assert.equal(tuningDirection(centsBetween(108, 110)), 'low')
   assert.equal(tuningDirection(centsBetween(112, 110)), 'high')

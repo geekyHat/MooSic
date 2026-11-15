@@ -35,6 +35,11 @@
 .mm-tuner-mic { display: flex; align-items: center; justify-content: center; gap: .5rem; margin-top: .8rem; font-size: .7rem; color: var(--tuner-muted); }
 .mm-tuner-level { width: 24px; height: 5px; border-radius: 8px; overflow: hidden; background: #3a4943; }
 .mm-tuner-level::after { content: ''; display: block; height: 100%; background: var(--tuner-green); transform-origin: left; transform: scaleX(var(--input-level)); transition: transform 100ms ease; }
+.mm-tuner-signal { grid-column: 1 / -1; color: var(--tuner-muted); font-size: .75rem; line-height: 1.5; margin: .5rem 0 0; }
+.mm-tuner-troubleshooting { grid-column: 1 / -1; }
+.mm-tuner-troubleshooting summary { cursor: pointer; min-height: 44px; padding-block: .5rem; }
+.mm-tuner-troubleshooting ul { padding-left: 1.25rem; }
+.mm-tuner-troubleshooting li + li { margin-top: .5rem; }
 .mm-tuner-error { margin: 1rem 0 0; padding: .75rem; color: #ffd5c2; background: #553327; border-radius: 8px; font-size: .85rem; text-align: left; }
 .mm-tuner-instrument { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; background: #19221f; border-left: 1px solid #34403d; }
 .mm-tuner-instrument > p { color: var(--tuner-muted); font-size: .75rem; text-align: center; margin: 0; }
