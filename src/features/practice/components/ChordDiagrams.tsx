@@ -14,7 +14,7 @@ export function ChordDiagrams({ chords, unavailableLabel, instrument, definition
 }) {
   if (!chords.length) return null
   const uniqueChords = Array.from(new Set(chords)).sort()
-  return <div className="mm-chord-diagrams flex flex-wrap items-start justify-center gap-4 px-4 pb-1 pt-2 max-narrow:flex-nowrap max-narrow:justify-start max-narrow:gap-3 max-narrow:overflow-x-auto max-narrow:px-0">
+  return <div className="mm-chord-diagrams flex flex-wrap items-start justify-center gap-4 px-4 pb-1 pt-2 max-narrow:gap-3 max-narrow:px-0">
     {uniqueChords.map(name => {
       const positions = chordFingerings(name, {
         library: instrument.chordLibrary,

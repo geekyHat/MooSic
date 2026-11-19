@@ -1,7 +1,7 @@
-import { useState, type CSSProperties } from 'react'
+import { useEffect, useState, type CSSProperties } from 'react'
 import type { Locale } from '@/core/i18n'
-import { TUNER_RANGE, TUNING_TOLERANCE } from '@/domain/music/tuner'
-import { GuitarStrings } from './GuitarStrings'
+import { TUNER_RANGE, TUNING_TOLERANCE, TUNING_PRESETS, tuningPresetId, type TuningPresetId } from '@/domain/music/tuner'
+import { InstrumentStrings } from './InstrumentStrings'
 import { useTuner, type TunerError } from './useTuner'
 import './tuner.css'
 
@@ -28,9 +28,23 @@ const errors: Record<'it' | 'en', Record<TunerError, string>> = {
   },
 }
 
-export function TunerView({ locale }: { locale: Locale }) {
-  const [selected, setSelected] = useState<number | null>(null)
-  const it = locale === 'it', tuner = useTuner(selected)
+export function TunerView({ locale, onClose }: { locale: Locale; onClose: () => void }) {
+  const [{ preset, selected }, setChoice] = useState(() => {
+    let stored: unknown
+    try { stored = localStorage.getItem('mm:tuner-preset') } catch { /* Private storage can be unavailable. */ }
+    return { preset: tuningPresetId(stored), selected: null as number | null }
+  })
+  useEffect(() => {
+    try { localStorage.setItem('mm:tuner-preset', preset) } catch { /* Tuning still works without persistence. */ }
+  }, [preset])
+  const setSelected = (selected: number | null) => setChoice(previous => ({ ...previous, selected }))
+  const choosePreset = (preset: TuningPresetId) => {
+    setChoice({ preset, selected: null })
+  }
+  const it = locale === 'it', tuner = useTuner(selected, preset)
+  const strings = TUNING_PRESETS[preset].strings
+  const guitar = preset === 'guitar'
+  const instrumentName = guitar ? it ? 'chitarra' : 'guitar' : 'ukulele'
   const listening = tuner.status === 'listening', requesting = tuner.status === 'requesting'
   const { target, cents, direction } = tuner
   const meterValue = Math.max(-TUNER_RANGE, Math.min(TUNER_RANGE, cents ?? 0))
@@ -38,16 +52,23 @@ export function TunerView({ locale }: { locale: Locale }) {
   const noteLabel = target ? `${it ? target.solfege + ' · ' : ''}${target.note}${target.octave}` : ''
   return <section className="mm-tuner" aria-labelledby="tuner-title">
     <header className="mm-tuner-heading">
-      <div><p className="mm-tuner-eyebrow">{it ? 'IL TUO SUONO, A FUOCO' : 'FIND YOUR SOUND'}</p><h2 id="tuner-title">{it ? 'Accordatore' : 'Guitar tuner'}</h2></div>
-      <span className="mm-tuner-tuning">{it ? 'Chitarra · Standard' : 'Guitar · Standard'}<small>E A D G B E · A4 = 440 Hz</small></span>
+      <button type="button" className="mm-tuner-close" onClick={onClose}>{it ? '← Indietro' : '← Back'}</button>
+      <div><p className="mm-tuner-eyebrow">{it ? 'IL TUO SUONO, A FUOCO' : 'FIND YOUR SOUND'}</p><h2 id="tuner-title">{it ? 'Accordatore' : guitar ? 'Guitar tuner' : 'Ukulele tuner'}</h2></div>
     </header>
+    <div className="mm-tuner-selection">
+      <div className="mm-tuner-presets" role="group" aria-label={it ? 'Strumento' : 'Instrument'}>
+        <button type="button" aria-pressed={guitar} onClick={() => choosePreset('guitar')}>{it ? 'Chitarra' : 'Guitar'}</button>
+        <button type="button" aria-pressed={!guitar} onClick={() => choosePreset('ukulele')}>Ukulele</button>
+      </div>
+      <p className="mm-tuner-tuning">{strings.map(string => `${string.note}${string.octave}`).join(' · ')}<span> · A4 = 440 Hz</span></p>
+    </div>
     <div className="mm-tuner-board" data-direction={direction ?? 'idle'}>
       <div className="mm-tuner-console">
         <div className="mm-tuner-mode" role="group" aria-label={it ? 'Riconoscimento corda' : 'String detection'}>
           <button type="button" aria-pressed={selected === null} onClick={() => setSelected(null)}>{it ? 'Automatico' : 'Automatic'}</button>
-          <button type="button" aria-pressed={selected !== null} onClick={() => setSelected(target?.number ?? 6)}>{it ? 'Manuale' : 'Manual'}</button>
+          <button type="button" aria-pressed={selected !== null} onClick={() => setSelected(target?.number ?? strings[0].number)}>{it ? 'Manuale' : 'Manual'}</button>
         </div>
-        <p className="mm-tuner-target">{target ? `${it ? 'CORDA' : 'STRING'} ${target.number} · ${it ? target.solfege : target.number === 6 ? 'LOW E' : target.number === 1 ? 'HIGH E' : target.note}` : it ? 'UNA CORDA ALLA VOLTA' : 'ONE STRING AT A TIME'}</p>
+        <p className="mm-tuner-target">{target ? `${it ? 'CORDA' : 'STRING'} ${target.number} · ${it ? target.solfege : guitar && target.number === 6 ? 'LOW E' : guitar && target.number === 1 ? 'HIGH E' : target.note}` : it ? 'UNA CORDA ALLA VOLTA' : 'ONE STRING AT A TIME'}</p>
         <div className="mm-tuner-note" aria-hidden="true">{target?.note ?? '—'}{target && <sub>{target.octave}</sub>}<span className="mm-tuner-check">{direction === 'tuned' ? '✓' : ''}</span></div>
         <div className="mm-tuner-feedback" role="status" aria-live="polite" aria-atomic="true"><span aria-hidden="true">{direction === 'low' ? '↑ ' : direction === 'high' ? '↓ ' : ''}</span>{noteLabel && <span className="sr-only">{noteLabel}: </span>}{status}</div>
         <div className="mm-tuner-meter" role="meter" aria-label={it ? 'Scostamento dalla nota in cent' : 'Pitch deviation in cents'} aria-valuemin={-TUNER_RANGE} aria-valuemax={TUNER_RANGE} aria-valuenow={Math.round(meterValue)} aria-valuetext={cents === null ? it ? 'In attesa di una nota' : 'Waiting for a note' : `${Math.round(cents)} cent · ${status}`}>
@@ -61,20 +82,20 @@ export function TunerView({ locale }: { locale: Locale }) {
           {requesting ? it ? 'Annulla' : 'Cancel' : listening ? it ? 'Ferma ascolto' : 'Stop listening' : it ? 'Tocca per accordare' : 'Tap to tune'}
         </button>
         <div className="mm-tuner-mic"><span className="mm-tuner-level" aria-hidden="true" style={{ '--input-level': Math.min(1, Math.sqrt(tuner.level) * 3) } as CSSProperties}/>{listening ? tuner.signal === 'muted' ? it ? 'Microfono silenziato' : 'Microphone muted' : it ? 'Microfono attivo' : 'Microphone on' : requesting ? it ? 'In attesa del microfono e dell’audio…' : 'Waiting for microphone and audio…' : it ? 'Microfono spento' : 'Microphone off'}</div>
-        {listening && <p className="mm-tuner-signal" role="status">{tuner.signal === 'muted' ? it ? 'Il dispositivo ha silenziato l’ingresso. Controlla l’accesso al microfono nelle impostazioni del telefono.' : 'The device muted the input. Check microphone access in your phone settings.' : tuner.signal === 'silent' ? it ? 'Nessun segnale utile dal microfono. Avvicina il telefono alla chitarra e controlla le autorizzazioni.' : 'No usable microphone signal. Move the phone closer to the guitar and check permissions.' : tuner.signal === 'sound' ? it ? 'Segnale audio rilevato' : 'Audio signal detected' : it ? 'In attesa del suono…' : 'Waiting for sound…'}</p>}
+        {listening && <p className="mm-tuner-signal" role="status">{tuner.signal === 'muted' ? it ? 'Il dispositivo ha silenziato l’ingresso. Controlla l’accesso al microfono nelle impostazioni del telefono.' : 'The device muted the input. Check microphone access in your phone settings.' : tuner.signal === 'silent' ? it ? `Nessun segnale utile dal microfono. Avvicina il telefono ${guitar ? 'alla chitarra' : 'all’ukulele'} e controlla le autorizzazioni.` : `No usable microphone signal. Move the phone closer to the ${instrumentName} and check permissions.` : tuner.signal === 'sound' ? it ? 'Segnale audio rilevato' : 'Audio signal detected' : it ? 'In attesa del suono…' : 'Waiting for sound…'}</p>}
         {tuner.error && <p className="mm-tuner-error" role="alert">{errors[locale][tuner.error]}</p>}
       </div>
       <div className="mm-tuner-instrument">
-        <GuitarStrings active={target?.number ?? null} selected={selected} tuned={direction === 'tuned'} it={it} onSelect={setSelected}/>
+        <InstrumentStrings strings={strings} guitar={guitar} active={target?.number ?? null} selected={selected} tuned={direction === 'tuned'} it={it} onSelect={setSelected}/>
         <p>{it ? 'Tocca una corda per selezionarla' : 'Tap a string to select it'}</p>
       </div>
     </div>
-    <footer className="mm-tuner-help"><p>{it ? `Pizzica una corda a vuoto e lascia che risuoni. La scala copre ±${TUNER_RANGE} cent; il verde si accende entro ±10 cent. Regola la chiavetta con piccoli movimenti.` : `Pluck an open string and let it ring. The scale covers ±${TUNER_RANGE} cents; green lights up within ±10 cents. Adjust the tuning peg in small steps.`}</p><p>{it ? 'Se la corda è molto scordata, selezionala manualmente. Il suono viene analizzato sul dispositivo, senza registrazioni né invii.' : 'If a string is far out of tune, select it manually. Sound is analyzed on your device, without recording or uploading.'}</p>
+    <details className="mm-tuner-help-panel"><summary>{it ? 'Come accordare e assistenza' : 'Tuning help and microphone support'}</summary><footer className="mm-tuner-help"><p>{it ? `Pizzica una corda a vuoto e lascia che risuoni. La scala copre ±${TUNER_RANGE} cent; il verde si accende entro ±10 cent. Regola la chiavetta con piccoli movimenti.` : `Pluck an open string and let it ring. The scale covers ±${TUNER_RANGE} cents; green lights up within ±10 cents. Adjust the tuning peg in small steps.`}</p><p>{it ? 'Se la corda è molto scordata, selezionala manualmente. Il suono viene analizzato sul dispositivo, senza registrazioni né invii.' : 'If a string is far out of tune, select it manually. Sound is analyzed on your device, without recording or uploading.'}</p>
       <details className="mm-tuner-troubleshooting"><summary>{it ? 'Il microfono non rileva suoni su Android?' : 'No microphone signal on Android?'}</summary><ul>
         <li>{it ? 'Attiva «Accesso al microfono» nei controlli privacy del telefono. In Impostazioni → App → il tuo browser → Autorizzazioni, consenti il microfono.' : 'Enable “Microphone access” in the phone privacy controls. In Settings → Apps → your browser → Permissions, allow the microphone.'}</li>
         <li>{it ? 'Nelle autorizzazioni del sito, consenti il microfono anche se usi la webapp installata.' : 'Allow the microphone in the site permissions, including when using the installed web app.'}</li>
-        <li>{it ? 'Scollega temporaneamente le cuffie Bluetooth, chiudi le altre app che usano il microfono e riprova vicino alla chitarra.' : 'Temporarily disconnect Bluetooth headsets, close other apps using the microphone and try again close to the guitar.'}</li>
+        <li>{it ? 'Scollega temporaneamente le cuffie Bluetooth, chiudi le altre app che usano il microfono e riprova vicino allo strumento.' : 'Temporarily disconnect Bluetooth headsets, close other apps using the microphone and try again close to the instrument.'}</li>
       </ul></details>
-    </footer>
+    </footer></details>
   </section>
 }

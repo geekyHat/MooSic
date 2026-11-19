@@ -52,7 +52,8 @@ for (const width of [1440, 320]) test(`OLGA transpose changes every chord and sl
   await expect(page.getByRole('img', { name: 'D', exact: true })).toHaveAttribute('data-frets', 'x x 0 2 3 2')
   await expect(page.getByRole('img', { name: 'D/F#', exact: true })).toHaveAttribute('data-frets', '2 5 4 2 3 2')
   await expect(page.getByRole('img', { name: 'C#m7b5', exact: true })).toHaveAttribute('data-frets', 'x 4 5 4 5 x')
-  expect(await doc.textContent()).toBe(original.replaceAll('[C]', '[D]').replaceAll('[Am]', '[Bm]').replaceAll('[C/E]', '[D/F#]').replaceAll('[Bm7b5]', '[C#m7b5]'))
+  expect(await doc.locator('.mm-document-line').allTextContents()).toEqual(original.split('\n').filter(line => !/^[eBGDAE]\|/.test(line)).map(line => line.replaceAll('[C]', '[D]').replaceAll('[Am]', '[Bm]').replaceAll('[C/E]', '[D/F#]').replaceAll('[Bm7b5]', '[C#m7b5]') + (line === '{eot}' ? '' : '\n')))
+  expect(await page.getByLabel('Original OLGA source', { exact: true }).textContent()).toBe(original)
   await expect(page.getByText('Only recognized chords are transposed.', { exact: false })).toBeVisible()
   expect(await page.locator('main').evaluate(element => element.scrollWidth <= element.clientWidth)).toBe(true)
   await page.screenshot({ path: testInfo.outputPath(`transpose-${width}.png`) })
@@ -72,7 +73,7 @@ for (const width of [1440, 320]) test(`OLGA transpose changes every chord and sl
   await expect(amount).toHaveText('+2')
   await reset.click()
   await expect(amount).toHaveText('0')
-  expect(await doc.textContent()).toBe(original)
+  expect(await page.getByLabel('Original OLGA source', { exact: true }).textContent()).toBe(original)
   await expect(page.getByRole('img', { name: 'C', exact: true })).toHaveAttribute('data-frets', 'x 3 5 5 5 3')
   expect(await page.evaluate(() => window.audioStarts)).toBe(0)
   await up.click()
@@ -80,7 +81,7 @@ for (const width of [1440, 320]) test(`OLGA transpose changes every chord and sl
   await page.reload()
   await openUserSong(page, 'Ada Example')
   await expect(amount).toHaveText('0')
-  expect(await doc.textContent()).toBe(original)
+  expect(await page.getByLabel('Original OLGA source', { exact: true }).textContent()).toBe(original)
 })
 
 for (const free of [false, true]) test(`transpose updates ${free ? 'free-sheet anchors' : 'legacy chord rows'} and resets on arrangement changes`, async ({ page }) => {

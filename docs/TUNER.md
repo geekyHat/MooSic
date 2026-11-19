@@ -1,4 +1,4 @@
-# Guitar tuner: stability and references
+# Guitar and ukulele tuner: presets, stability and references
 
 The original display used ±50 cents, immediately reselected the closest string, and discarded its pitch history after one jump over 80 cents. A noisy attack or octave estimate could blank the reading and move the target while the player was adjusting a peg.
 
@@ -11,6 +11,30 @@ The revised tuner uses:
 - A five-sample median followed by time-based exponential smoothing in logarithmic pitch (260 ms time constant), so peg movements remain continuous without blending separate strings.
 - Automatic target hysteresis: another string must be at least 80 cents closer before it replaces the current target. Manual selection fixes the target regardless of detected pitch.
 - A simple guitar-neck illustration with six strings, a nut and frets, without the realistic headstock details.
+
+## Instruments and mobile layout
+
+The tuner has independent, validated presets for standard six-string guitar and
+re-entrant standard ukulele (G4 C4 E4 A4), both
+referenced to A4 = 440 Hz. Conventional physical string numbers are separate
+from instrument-plugin IDs. The practice ukulele plugin remains low-G and now
+labels that tuning explicitly; tuner selection does not reinterpret songs.
+
+The last explicit preset is stored under `mm:tuner-preset`. Changing presets
+resets manual selection, smoothing, automatic-target history and displayed
+feedback, while retaining the existing microphone session. Permission requests
+use the latest selected preset when granted. Invalid saved presets fall back to
+guitar, and unavailable browser storage does not prevent tuning.
+
+At widths up to 720 CSS pixels, the tuner route fills the dynamic viewport,
+hides the normal app header, and accounts for safe-area insets. Only inline Guitar/Ukulele buttons are offered; there is no tuning submenu.
+A previously saved Low-G tuner choice migrates to standard ukulele and is persisted
+as `ukulele`. A responsive neck illustration keeps
+its four or six strings visible and selectable alongside the primary controls in portrait. Short landscape layouts
+and enlarged text can scroll vertically; help is expandable. Back restores the
+previous application history entry and reading position, with a Library fallback
+for a direct entry. Browser fullscreen permission is not required. Opening the
+route remains idle until an explicit microphone-start tap.
 
 ## Android microphone input
 
@@ -52,4 +76,4 @@ These are conceptual references. No source code or assets were copied or vendore
 
 ## Verification and limits
 
-Unit tests cover all six strings, multiple sample rates, expanded frequency range, damped harmonic signals with noise/DC offset, octave spikes, jitter, slow tuning sweeps, real note changes, target boundaries, silence and green-state hysteresis. Browser tests exercise a real Web Audio analyzer with synthesized input, the expanded meter and microphone lifecycle. Physical guitar/microphone tests remain necessary to assess room noise, device processing and mobile behavior; multiple simultaneous strings are not supported.
+Unit tests cover every guitar and ukulele preset at 44.1/48/96 kHz, including physical high-G ordering and detuning. They also cover multiple sample rates, expanded frequency range, damped harmonic signals with noise/DC offset, octave spikes, jitter, slow tuning sweeps, real note changes, target boundaries, silence and green-state hysteresis. Browser tests exercise a real Web Audio analyzer with synthesized input, the expanded meter and microphone lifecycle. Physical guitar/ukulele/microphone tests remain necessary to assess room noise, device processing and mobile behavior; multiple simultaneous strings are not supported.

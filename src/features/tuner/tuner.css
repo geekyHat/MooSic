@@ -2,8 +2,7 @@
 .mm-tuner-heading { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin: .5rem 0 1.5rem; }
 .mm-tuner-eyebrow { color: var(--mm-muted); font-size: .65rem; font-weight: 650; letter-spacing: .16em; margin: 0 0 .4rem; }
 .mm-tuner-heading h2 { margin: 0; font-size: clamp(1.6rem, 4vw, 2rem); letter-spacing: -.045em; font-weight: 700; }
-.mm-tuner-tuning { font-size: .85rem; text-align: right; font-weight: 600; }
-.mm-tuner-tuning small { display: block; color: var(--mm-muted); font-size: .7rem; font-weight: 400; margin-top: .35rem; }
+.mm-tuner-tuning { margin: .5rem 0 .75rem; color: var(--mm-muted); font-size: .75rem; text-align: center; overflow-wrap: anywhere; }
 .mm-tuner-board { --tuner-green: #55e6bb; --tuner-text: #f2f4ed; --tuner-muted: #a6b2b0; --tuner-feedback: #efc885; display: grid; grid-template-columns: 1fr 1fr; overflow: hidden; border: 1px solid #384340; border-radius: 24px; background: #141b1a; color: var(--tuner-text); box-shadow: 0 16px 44px #07151114; color-scheme: dark; }
 .mm-tuner-board[data-direction='tuned'] { --tuner-feedback: var(--tuner-green); }
 .mm-tuner-console { padding: 2.2rem 2.5rem; align-self: center; text-align: center; min-width: 0; }
@@ -58,11 +57,10 @@
 .mm-tuner-string[data-tuned='true'] { border-color: var(--tuner-green); background: #164638; box-shadow: 0 0 0 3px #55e6bb1c, 0 0 25px #55e6bb10; }
 .mm-tuner-help { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin: 1.25rem .3rem; color: var(--mm-muted); font-size: .8rem; line-height: 1.7; }
 .mm-tuner-help p { margin: 0; }
-@media (max-width: 700px) {
+@media (max-width: 45rem) {
   .mm-tuner-heading { margin: .5rem 0 1rem; }
   .mm-tuner-eyebrow { font-size: .55rem; letter-spacing: .08em; }
   .mm-tuner-tuning { font-size: .7rem; }
-  .mm-tuner-tuning small { font-size: .6rem; }
   .mm-tuner-board { grid-template-columns: 1fr; border-radius: 18px; }
   .mm-tuner-console { display: grid; grid-template-columns: 80px minmax(0, 1fr); align-items: center; gap: .35rem .75rem; padding: 1rem 1.5rem; }
   .mm-tuner-mode { grid-column: 1 / -1; justify-self: center; margin: 0 0 .25rem; }
@@ -92,4 +90,39 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .mm-tuner-board *, .mm-tuner-board *::after { transition: none; }
+}
+
+.mm-tuner-close { min-height: 44px; padding: .5rem .75rem; border: 1px solid var(--mm-border); border-radius: 10px; cursor: pointer; background: var(--mm-panel); color: var(--mm-ink); align-self: start; }
+.mm-tuner-selection { width: 100%; max-width: 420px; margin: 0 auto .5rem; }
+.mm-tuner-presets { display: flex; flex-wrap: wrap; gap: .4rem; }
+.mm-tuner-presets button { flex: 1; min-width: 0; min-height: 44px; padding: .5rem .75rem; border: 1px solid var(--mm-border); border-radius: 10px; color: var(--mm-ink); background: var(--mm-panel); cursor: pointer; overflow-wrap: anywhere; }
+.mm-tuner-presets button[aria-pressed='true'] { border-color: var(--mm-accent); background: var(--mm-accent); color: var(--mm-accent-ink); font-weight: 650; }
+.mm-tuner-help-panel { margin-top: .5rem; }
+.mm-tuner-help-panel > summary { min-height: 44px; padding-block: .65rem; cursor: pointer; color: var(--mm-muted); font-size: .8rem; }
+@media (max-width: 45rem) {
+  .mm-tuner { display: flex; flex: 1; flex-direction: column; width: 100%; }
+  .mm-tuner-heading { gap: .5rem; margin: 0 0 .5rem; }
+  .mm-tuner-heading h2 { font-size: 1.4rem; }
+  .mm-tuner-heading > div { min-width: 0; overflow-wrap: anywhere; }
+  .mm-tuner-mode { flex-wrap: wrap; justify-content: center; }
+  .mm-tuner-mode button { min-width: 0; overflow-wrap: anywhere; }
+  .mm-tuner-eyebrow { display: none; }
+  .mm-tuner-selection { margin-bottom: 0; }
+  .mm-tuner-tuning { font-size: .6rem; margin-block: .35rem .25rem; }
+  .mm-tuner-board { border-radius: 14px; }
+  .mm-tuner-console { padding: .5rem .75rem; gap: .2rem .75rem; }
+  .mm-tuner-mode { padding: 2px; }
+  .mm-tuner-note { font-size: 2.5rem; }
+  .mm-tuner-scale, .mm-tuner-needle { height: 24px; }
+  .mm-tuner-scale i { top: 6px; }
+  .mm-tuner-scale i[data-major='true'] { top: 0; }
+  .mm-tuner-mode button { min-height: 44px; }
+  .mm-tuner-instrument { padding: .375rem .75rem; }
+  .mm-tuner-strings { margin: 0; max-width: none; }
+  .mm-tuner-strings-heading, .mm-tuner-instrument > p { display: none; }
+  .mm-tuner-neck { height: clamp(144px, calc(100dvh - 450px), 260px); }
+  .mm-tuner-string { min-width: 44px; min-height: 44px; }
+  .mm-tuner-string-note { font-size: 1.15rem; }
+  .mm-tuner-help-panel { margin-top: auto; }
+  .mm-tuner-help-panel > summary { font-size: .75rem; }
 }

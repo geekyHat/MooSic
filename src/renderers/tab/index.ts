@@ -55,17 +55,20 @@ export function renderTabs(
     }
   }
   const MIN_PX_GAP = 32 // 26px circle + 6px clearance
-  const barW = Math.max(BAR_WIDTH, Math.ceil(30 + MIN_PX_GAP / minGap))
-
-  const containerW = Math.max(target.clientWidth || 320, 180)
+  const naturalBarW = Math.max(BAR_WIDTH, Math.ceil(34 + MIN_PX_GAP / minGap))
+  const style = getComputedStyle(target)
+  const containerW = Math.max(100, (target.clientWidth || 320) - parseFloat(style.paddingLeft || '0') - parseFloat(style.paddingRight || '0'))
+  const available = Math.max(48, containerW - MARGIN_L - 12)
+  // Continue dense bars across systems, keeping note spacing and font size.
+  const partsPerBar = Math.max(1, Math.ceil((naturalBarW - 34) / (available - 34)))
+  const barW = 34 + (naturalBarW - 34) / partsPerBar
   const barsPerLine = Math.max(1, Math.floor((containerW - MARGIN_L - 12) / barW))
-  const nRows = Math.max(1, Math.ceil(piece.bars / barsPerLine))
+  const nRows = Math.max(1, Math.ceil(piece.bars * partsPerBar / barsPerLine))
   const rowH = nLines * LINE_SPACING + 8
   const width = MARGIN_L + barsPerLine * barW + 8
   const height = TOP_PAD + nRows * (rowH + LINE_GAP)
 
-  // Fixed pixel size (no viewBox scaling): the panel scrolls horizontally
-  // instead of shrinking the whole tab when it is wider than the viewport.
+  // Fixed text/note sizes; additional systems fit dense music vertically.
   const svg = svgEl('svg', {
     width: width,
     height: height,
@@ -110,16 +113,17 @@ export function renderTabs(
   }
 
   // Bar lines + numbers + notes
-  for (let bar = 0; bar < piece.bars; bar++) {
-    const row = Math.floor(bar / barsPerLine)
-    const col = bar % barsPerLine
+  for (let slot = 0; slot < piece.bars * partsPerBar; slot++) {
+    const bar = Math.floor(slot / partsPerBar), part = slot % partsPerBar
+    const row = Math.floor(slot / barsPerLine)
+    const col = slot % barsPerLine
     const x = MARGIN_L + col * barW
     const yTop = TOP_PAD + row * (rowH + LINE_GAP)
     const yBot = yTop + (nLines - 1) * LINE_SPACING
     barX.push(x)
     barRow.push(row)
 
-    if (bar > 0) {
+    if (slot > 0) {
       svg.appendChild(
         svgEl('line', {
           x1: x - 14,
@@ -138,19 +142,21 @@ export function renderTabs(
       'text-anchor': 'end',
       fill: 'var(--mm-muted)',
     })
-    num.textContent = String(bar + 1)
+    num.textContent = `${bar + 1}${part ? '↳' : ''}`
     svg.appendChild(num)
 
     // Notes of this bar
     const barStart = bar * piece.barLength
     for (const n of piece.notes) {
       if (n.bar !== bar + 1) continue
+      const fraction = Math.min(.999999, Math.max(0, (n.time - barStart) / piece.barLength))
+      if (Math.floor(fraction * partsPerBar) !== part) continue
       // Prefer the note's own fingering (user-placed tab) over the pitch-derived one.
       const positions =
         piece.instrumentId === instrument.id && n.string != null && n.fret != null
           ? [{ string: n.string, fret: n.fret }]
           : instrument.noteToPositions(n.pitchMidi)
-      const fx = 14 + (Math.min(0.92, Math.max(0, (n.time - barStart) / piece.barLength)) * (barW - 34))
+      const fx = 14 + ((fraction * partsPerBar - part) * (barW - 34))
       const cx = x + fx
       const g = svgEl('g')
       if (positions.length === 0) {
@@ -217,10 +223,11 @@ export function renderTabs(
       g.classList.toggle('mm-tab-note-active', activeIds.has(id))
     }
     const bar = Math.min(piece.bars - 1, Math.max(0, barOfTime(piece, t) - 1))
-    const row = barRow[bar]
+    const frac = Math.min(.999999, Math.max(0, (t - bar * piece.barLength) / piece.barLength))
+    const part = Math.floor(frac * partsPerBar), slot = bar * partsPerBar + part
+    const row = barRow[slot]
     const yTop = TOP_PAD + row * (rowH + LINE_GAP)
-    const frac = Math.min(1, Math.max(0, (t - bar * piece.barLength) / piece.barLength))
-    const px = barX[bar] + frac * barW
+    const px = barX[slot] + 14 + (frac * partsPerBar - part) * (barW - 34)
     playhead.setAttribute('x1', String(px))
     playhead.setAttribute('x2', String(px))
     playhead.setAttribute('y1', String(yTop - 6))

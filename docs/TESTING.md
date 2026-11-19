@@ -16,7 +16,7 @@ npm run check:offline
 
 `quality` checks TypeScript, lint, architecture boundaries, unit tests, the production build and bundle budgets. `check:gates` injects temporary negative controls and removes them afterwards. Production tests require a prior build. PWA tests create two isolated builds under `.qa/pwa/` and exercise the real worker under a subdirectory, including cold offline launches, recognition assets, updates and first-install pairing.
 
-The guitar tuner has deterministic pitch tests for all six strings at 44.1/48/96 kHz, detuning, overtones, silence and noise, plus jitter, octave spikes, continuous peg movements and target hysteresis. [Implementation and open-source references](TUNER.md). `npm run test:browser -- tests/tuner.spec.ts` feeds a synthetic Web Audio stream through the actual analyzer and checks pitch feedback, manual/automatic selection, permission errors, cancellation, microphone cleanup, responsive layouts and accessibility. The offline cold-launch test also opens the tuner without a prior visit. These checks do not replace a listening check with a physical guitar and microphone, particularly on mobile Safari.
+The guitar/ukulele tuner has deterministic pitch tests for every string in standard guitar and standard ukulele at 44.1/48/96 kHz, detuning, overtones, silence and noise, plus jitter, octave spikes, continuous peg movements and target hysteresis. [Implementation and open-source references](TUNER.md). `npm run test:browser -- tests/tuner.spec.ts` feeds a synthetic Web Audio stream through the actual analyzer and checks pitch feedback, manual/automatic selection, permission errors, cancellation, microphone cleanup, responsive layouts and accessibility. The offline cold-launch test also opens the tuner without a prior visit. These checks do not replace a listening check with a physical guitar and microphone, particularly on mobile Safari.
 
 Local Chromium can use `/usr/bin/chromium` or `CHROMIUM_PATH`; CI uses Playwright browser binaries. Linux WebKit may require the native libraries supplied by the official Playwright container. Automated browser tests do not substitute for testing on physical phones or Safari/iOS.
 
@@ -76,3 +76,29 @@ Use fresh artifact and runtime directories for each run. `--network=host` is spe
 PWA fixtures publish distinct application versions 1.1.1 and 1.1.2 with the same commit/build ID, covering repeated publications of one commit as well as normal version changes. Update tests assert the actually running version after activation (hiding the banner alone is insufficient), an active-worker activation request, missed controllerchange, timeout/unlock/retry, persistence and a cold offline reopen. Unit tests verify monotonic Pages versions and rerun stability. LocalSend tests cover OLGA-only totals, empty transfers, explicit duplicate-only results, hidden content activation and tampered source SHA-256 before writes. The full-backup validation/rollback tests remain applicable to both buffered ZIPs and the library merge.
 
 For a large private backup, keep the archive outside Git and test its counts, merge, reload and library visibility in an independent mobile-profile browser. Do not commit personal archives or their song texts. Mobile emulation is not a physical Android performance guarantee.
+
+
+## Mobile reading and fullscreen tuner
+
+`tests/mobile-reading.spec.ts` imports an actual OLGA ZIP and a ChordPro file,
+reopens persisted content, and checks nested content widths at 320–1280px,
+portrait/landscape changes, source reconstruction of every TAB column,
+transposition, vertical autoscroll, both locales/themes, and 200% zoom.
+Generated dense TAB keeps its note sizes and all events while continuing into
+additional rows. Dense generated notation adds system breaks without adding
+barlines; the unit test compares parsed pitches and durations before/after.
+Original ABC uses width-aware measure wrapping and retains its source instructions.
+
+`tests/tuner.spec.ts` verifies all ukulele targets with synthetic microphone
+input, preset switching during listening and permission requests, persistence,
+stream/context counts, and viewport occupancy/control bounds from 320×568 to
+720×800, plus short landscape. `tests/history.spec.ts` verifies the return to
+the same song and reading position through Back/Forward. The PWA cold-offline
+launch test opens ukulele, selects a string, reloads, and exits successfully.
+
+`tests/visual/mobile.spec.ts` adds pinned Chromium/Firefox/WebKit references for
+short portrait guitar, portrait/landscape ukulele, and the responsive imported
+reader. Validate these with the existing Playwright QA image workflow. The local
+image may be named `musicmaestro-qa:pw1.64.1-audio` on older installations.
+Physical Android/iOS checks of safe areas, dynamic browser chrome and real
+instruments remain a release verification step; browser emulation is not a substitute.

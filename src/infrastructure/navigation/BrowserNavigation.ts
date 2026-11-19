@@ -63,6 +63,11 @@ export class BrowserNavigation {
     this.current=entry;this.write(options.replace?'replace':'push');this.publish(entry)
     this.scrollPositions.set(entry.index,entry.scrollTop)
   }
+  back = () => {
+    if (this.phase !== 'idle') return
+    if (this.current.index > 0) this.browser.history.back()
+    else this.navigate({ ...this.current.route, view: 'library' }, { replace: true })
+  }
   private pop = () => {
     const saved=mark(this.browser.history.state)
     const index=saved?.index??this.current.index+1

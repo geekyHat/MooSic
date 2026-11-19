@@ -57,7 +57,13 @@ export function renderNotation(
   host.style.width = '100%'
   target.appendChild(host)
 
-  const abcText = piece.source?.format === 'abc' ? piece.source.text : scoreToAbc(piece)
+  const style = getComputedStyle(target)
+  const staffWidth = Math.max(100, target.clientWidth - parseFloat(style.paddingLeft || '0') - parseFloat(style.paddingRight || '0') - 30)
+  const capacity = Math.max(2, Math.floor((staffWidth - 60) / 36))
+  const dense = piece.source?.format !== 'abc' && Array.from({ length: piece.bars }, (_, bar) => new Set(piece.notes.filter(note => note.bar === bar + 1).flatMap(note => [note.time, note.time + note.duration])).size).some(count => count > capacity)
+  // Generated scores can continue within a dense measure without adding barlines
+  // or changing timing. Original ABC retains its complete musical instructions.
+  const abcText = piece.source?.format === 'abc' ? piece.source.text : scoreToAbc(piece, dense ? capacity : Infinity)
   const qpm = piece.tempo
   const wholeNoteSeconds = 240 / qpm
 
@@ -69,6 +75,8 @@ export function renderNotation(
   try {
     const result = renderAbc(host, abcText, {
       responsive: 'resize',
+      staffwidth: staffWidth,
+      ...(dense ? {} : { wrap: { minSpacing: 1.5, maxSpacing: 2.5, preferredMeasuresPerLine: 4 } }),
       scale: 1,
     }) as unknown as Array<{
       getSelectableArray?: () => SelectableNote[]

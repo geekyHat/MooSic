@@ -93,7 +93,7 @@ test('OLGA starts with its custom voicing, offers catalogue alternatives and lea
   await expect(card.getByRole('img', { name: 'A', exact: true })).toHaveAttribute('data-frets', 'x 0 2 2 2 0')
   await expect(page.getByRole('group', { name: 'Chord positions for Bm7b5', exact: true }).getByRole('button')).toHaveCount(0)
   await expect(page.locator('.mm-chord-diag').filter({ hasText: 'Cadd9' }).getByRole('button')).toHaveCount(0)
-  expect(await page.getByLabel('OLGA document', { exact: true }).textContent()).toBe(source)
+  expect(await page.getByLabel('Original OLGA source', { exact: true }).textContent()).toBe(source)
 })
 
 test('the interactive diagrams have no serious or critical accessibility violations', async ({ page }) => {

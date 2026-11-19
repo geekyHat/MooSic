@@ -1,3 +1,4 @@
+import {chooseTunerPreset} from '../fixtures/browser'
 import {openLegacySync} from '../fixtures/legacySync'
 import {test,expect,type Page} from '@playwright/test'
 import {scanImage,textPdf} from '../fixtures/scans'
@@ -34,6 +35,11 @@ test('subpath manifest, verified precache and native install prompt support a fr
  await expect(cold.getByRole('heading',{name:'Guitar tuner',exact:true})).toBeVisible()
  await cold.getByRole('button',{name:/^String 6 E2/}).click()
  await expect(cold.getByRole('button',{name:'Manual',exact:true})).toHaveAttribute('aria-pressed','true')
+ await chooseTunerPreset(cold,'ukulele')
+ await expect(cold.locator('.mm-tuner-string')).toHaveCount(4)
+ await cold.getByRole('button',{name:/^String 4 G4/}).click()
+ await cold.reload();await expect(cold.getByRole('group',{name:'Instrument',exact:true}).getByRole('button',{name:'Ukulele',exact:true})).toHaveAttribute('aria-pressed','true')
+ await cold.getByRole('button',{name:'← Back',exact:true}).click()
  for(const index of [2,3,0]){await cold.locator('nav button').nth(index).click();await expect(cold.locator('main')).not.toHaveText('Loading…')}
  await cold.reload();await expect(cold.locator('.mm-song')).toContainText('Offline study');await cold.goto(base+'#/library');await expect(cold.locator('.mm-artist').filter({hasText:'Offline Artist'})).toBeVisible()
  await cold.getByRole('button',{name:'import olga archive',exact:true}).click()

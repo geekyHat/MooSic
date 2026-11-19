@@ -153,3 +153,26 @@ test('tuner has a direct, reloadable hash route', () => {
   assert.equal(location.view, 'tuner')
   assert.equal(formatLocation(location), '#/tuner')
 })
+
+test('all ukulele presets resolve physical string order, detuning and harmonics across sample rates', async () => {
+  const { TUNING_PRESETS, closestString, tuningPresetId } = await import('../../src/domain/music/tuner.ts')
+  assert.equal(tuningPresetId('__proto__'), 'guitar')
+  assert.equal(tuningPresetId(null), 'guitar')
+  assert.equal(tuningPresetId('ukulele'), 'ukulele')
+  assert.equal(TUNING_PRESETS.ukulele.strings[0].octave, 4)
+  assert.deepEqual(Object.keys(TUNING_PRESETS), ['guitar', 'ukulele'])
+  assert.equal(tuningPresetId('ukulele-low-g'), 'ukulele')
+  for (const preset of Object.values(TUNING_PRESETS)) for (const rate of [44100, 48000, 96000]) {
+    const size = 2 ** Math.ceil(Math.log2(rate * .085)), detect = createPitchDetector(rate, size)
+    const tracker = new AutomaticStringTracker(preset.strings)
+    for (const string of preset.strings) for (const detuning of [-38, 0, 32]) for (const harmonics of [false, true]) {
+      const frequency = detuned(string.frequency, detuning)
+      const reading = detect(tone(frequency, rate, harmonics, size)).frequency
+      assert.ok(reading)
+      assert.ok(Math.abs(centsBetween(reading, frequency)) < 3)
+      assert.equal(closestString(reading, preset.strings).number, string.number)
+      assert.equal(tracker.update(reading)?.number, string.number)
+    }
+    assert.equal(tracker.update(null), null)
+  }
+})

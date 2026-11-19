@@ -68,7 +68,7 @@ function AppShell({core}:{core:AppCore}){
  },[entry.revision,view])
  const readyPractice=!route.practice.songId || !!targetSong && !!targetVersion && !!targetArrangement && core.currentSongId===targetSong.meta.id && core.currentVersionId===targetVersion.id && core.currentArrangement===targetArrangement.kind
  const loading=<p role="status">{core.locale==='it'?'Caricamento…':'Loading…'}</p>
- return <><div className="mm-shell flex h-full min-w-0 flex-col">
+ return <><div data-view={view} className="mm-shell flex h-full min-w-0 flex-col">
    <a className="mm-skip-link" href="#main-content" onClick={event=>{event.preventDefault();main.current?.focus()}}>{core.t('nav.skip')}</a>
    <AppHeader core={core} view={view} onNavigate={navigate} onHome={goHome}/>
    <main ref={main} onScroll={rememberScroll} id="main-content" tabIndex={-1} className="mm-main min-h-0 min-w-0 flex-1 overflow-auto p-5 max-narrow:p-3">
@@ -77,7 +77,7 @@ function AppShell({core}:{core:AppCore}){
        {view==='practice'&&(loadingCatalog?loading:!route.practice.songId?<p className="text-muted">{core.t('practice.select')}</p>:!targetArrangement?<section><h2>{core.locale==='it'?'Brano non disponibile':'Song unavailable'}</h2><p>{core.locale==='it'?'Il brano o l’arrangiamento non è presente nella libreria di questo dispositivo.':'This song or arrangement is not in this device’s library.'}</p><Button onClick={()=>navigate('library')}>{core.t('nav.library')}</Button></section>:!readyPractice?loading:<Practice core={core} scrollContainer={main} display={route.practice.display} onDisplayChange={display=>changePractice({display})} onArrangementChange={kind=>changePractice({kind,display:null})}/>)}
        {view==='editor'&&<Editor key={route.editorSongId??'index'} core={core} initialSongId={route.editorSongId} onSelectionChange={editorSongId=>{rememberScroll();navigation.navigate({...route,editorSongId})}} onOpenPractice={()=>{rememberScroll();navigation.navigate({...route,view:'practice',practice:currentPractice()})}}/>}
        {view==='settings'&&<Settings core={core}/>}
-       {view==='tuner'&&<Tuner locale={core.locale}/>}
+       {view==='tuner'&&<Tuner locale={core.locale} onClose={navigation.back}/>}
      </div></Suspense></ChunkBoundary>
    </main><NotificationRegion core={core}/>
  </div>{core.pwa&&<PwaNotice core={core}/>}</>

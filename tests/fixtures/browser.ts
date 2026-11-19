@@ -19,3 +19,6 @@ export async function openUserSong(page:Page,artist='QA',kind='Lyrics + chords')
  await page.locator('.mm-song').getByRole('button',{name:'Open',exact:true}).click()
  await chooseArrangement(page,kind)
 }
+export async function chooseTunerPreset(page: Page, preset: 'guitar' | 'ukulele') {
+  await page.getByRole('group', { name: 'Instrument', exact: true }).getByRole('button', { name: preset === 'guitar' ? 'Guitar' : 'Ukulele', exact: true }).click()
+}

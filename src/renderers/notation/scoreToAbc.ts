@@ -25,7 +25,7 @@ function duration(beats: number): string {
  * Original ABC remains authoritative for imported pieces. Split at bar/note
  * boundaries and tie held pitches so durations and the highlight stay aligned.
  */
-export function scoreToAbc(piece: Piece): string {
+export function scoreToAbc(piece: Piece, maxTokensPerLine = Infinity): string {
   const clean = (s: string) => s.replace(/[\r\n]/g, ' ')
   const lines = [
     'X:1', `T:${clean(piece.title)}`, `C:${clean(piece.composer ?? '')}`,
@@ -49,8 +49,9 @@ export function scoreToAbc(piece: Piece): string {
       const symbols = pitches.map(midi => pitch(midi) + (active.some(n => n.pitchMidi === midi && n.time + n.duration > end + 1e-6) ? '-' : ''))
       tokens.push(symbols.length === 0 ? `z${len}` : symbols.length === 1 && !symbols[0].endsWith('-') ? `${symbols[0]}${len}` : `[${symbols.join('')}]${len}`)
     }
-    bars.push(tokens.join(' ') + ' |')
+    const systems = Array.from({ length: Math.ceil(tokens.length / maxTokensPerLine) || 1 }, (_, index) => Number.isFinite(maxTokensPerLine) ? tokens.slice(index * maxTokensPerLine, (index + 1) * maxTokensPerLine).join(' ') : tokens.join(' '))
+    bars.push(systems.join('\n') + ' |')
   }
-  lines.push(...Array.from({ length: Math.ceil(bars.length / 4) }, (_, i) => bars.slice(i * 4, i * 4 + 4).join(' ')))
+  lines.push(...(Number.isFinite(maxTokensPerLine) ? bars : Array.from({ length: Math.ceil(bars.length / 4) }, (_, i) => bars.slice(i * 4, i * 4 + 4).join(' '))))
   return lines.join('\n')
 }

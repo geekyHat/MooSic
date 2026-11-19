@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright'
-import { expect, test } from './fixtures/browser'
+import { chooseTunerPreset, expect, test } from './fixtures/browser'
 import type { Page } from '@playwright/test'
 
 declare global {
@@ -81,6 +81,7 @@ test('permission alone does not claim a signal; silence and muted input give rec
   await page.evaluate(() => window.tunerTest.silence())
   await expect(page.locator('.mm-tuner-signal')).toContainText('No usable microphone signal', { timeout: 7000 })
   await expect(page.getByRole('button', { name: 'Stop listening' })).toBeVisible()
+  await page.getByText('Tuning help and microphone support', { exact: true }).click()
   await page.getByText('No microphone signal on Android?', { exact: true }).click()
   await expect(page.getByText('Enable “Microphone access”', { exact: false })).toBeVisible()
   await page.screenshot({ path: `/tmp/moosic-android-input-help-${test.info().project.name}.png`, fullPage: true })
@@ -210,3 +211,105 @@ for (const width of [320, 390, 768, 1280]) {
     await page.screenshot({ path: `/tmp/moosic-tuner-${width}.png`, fullPage: true })
   })
 }
+
+for (const preset of ['ukulele'] as const) {
+  test(`${preset}: all strings tune automatically and manually without reopening the microphone`, async ({ page }) => {
+    await microphone(page)
+    await page.goto('/#/tuner')
+    await page.getByRole('button', { name: /^String 6 E2/ }).click()
+    await page.getByRole('button', { name: 'Tap to tune', exact: true }).click()
+    await chooseTunerPreset(page, preset)
+    await expect(page.getByRole('button', { name: 'Automatic', exact: true })).toHaveAttribute('aria-pressed', 'true')
+    await expect(page.locator('.mm-tuner-string')).toHaveCount(4)
+    for (const [number, note, hz] of [[4, 'G4', 391.995436], [3, 'C4', 261.625565], [2, 'E4', 329.627557], [1, 'A4', 440]] as const) {
+      await page.evaluate(hz => window.tunerTest.frequency(hz), hz)
+      await expect(page.getByRole('button', { name: new RegExp(`^String ${number} ${note}`) })).toHaveAttribute('data-tuned', 'true')
+    }
+    await page.getByRole('button', { name: /^String 3 C4/ }).click()
+    await page.evaluate(() => window.tunerTest.frequency(440))
+    await expect(page.locator('.mm-tuner-reference')).toHaveText('Target C4 · 261.63 Hz')
+    await expect(page.locator('.mm-tuner-feedback')).toContainText('Too high')
+    expect(await page.evaluate(() => window.tunerTest.calls)).toBe(1)
+    expect(await page.evaluate(() => window.tunerTest.contexts.length)).toBe(1)
+    await page.reload()
+    await expect(page.getByRole('group', { name: 'Instrument', exact: true }).getByRole('button', { name: 'Ukulele', exact: true })).toHaveAttribute('aria-pressed', 'true')
+    await expect(page.getByRole('button', { name: 'Automatic', exact: true })).toHaveAttribute('aria-pressed', 'true')
+    expect(await page.evaluate(() => window.tunerTest.calls)).toBe(0)
+  })
+}
+
+test('switching preset during a pending permission request uses the new targets and releases a late grant on exit', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 667 })
+  await microphone(page, 'deferred')
+  await page.goto('/#/tuner')
+  await page.getByRole('button', { name: 'Tap to tune', exact: true }).click()
+  await expect.poll(() => page.evaluate(() => !!window.tunerTest.stream)).toBe(true)
+  await chooseTunerPreset(page, 'ukulele')
+  await page.evaluate(() => { window.tunerTest.frequency(440); window.tunerTest.grant() })
+  await expect(page.getByRole('button', { name: /^String 1 A4/ })).toHaveAttribute('data-tuned', 'true')
+  await page.setViewportSize({ width: 667, height: 375 })
+  expect(await page.evaluate(() => window.tunerTest.calls)).toBe(1)
+  await page.getByRole('button', { name: '← Back', exact: true }).click()
+  await expect(page).toHaveURL(/#\/library/)
+  await expect.poll(() => page.evaluate(() => window.tunerTest.stream?.getTracks().every(track => track.readyState === 'ended'))).toBe(true)
+  await page.getByRole('button', { name: 'Tuner', exact: true }).click()
+  await page.getByRole('button', { name: 'Tap to tune', exact: true }).click()
+  await expect.poll(() => page.evaluate(() => window.tunerTest.calls)).toBe(2)
+  await page.getByRole('button', { name: '← Back', exact: true }).click()
+  await expect(page).toHaveURL(/#\/library/)
+  await page.evaluate(() => window.tunerTest.grant())
+  await expect.poll(() => page.evaluate(() => window.tunerTest.stream?.getTracks().every(track => track.readyState === 'ended'))).toBe(true)
+})
+
+for (const [width, height] of [[320,568], [375,667], [390,844], [430,932], [667,375], [700,800], [720,800]] as const) {
+  test(`mobile tuner fills ${width}×${height} with reachable controls`, async ({ page }, testInfo) => {
+    await microphone(page)
+    await page.setViewportSize({ width, height })
+    await page.goto('/#/tuner')
+    await expect(page.getByRole('heading', { name: 'Guitar tuner' })).toBeFocused()
+    await expect(page.getByRole('navigation', { name: 'Main navigation' })).toBeHidden()
+    const shell = await page.locator('.mm-shell').boundingBox()
+    expect(shell!.height).toBe(height)
+    for (const preset of ['guitar', 'ukulele'] as const) {
+      await chooseTunerPreset(page, preset)
+      await expect(page.locator('.mm-tuner-neck-drawing')).toBeVisible()
+      await expect(page.locator('.mm-tuner select')).toHaveCount(0)
+      for (const selector of ['.mm-tuner-close', '.mm-tuner-presets button', '.mm-tuner-start', '.mm-tuner-string', '.mm-tuner-meter']) {
+        for (const element of await page.locator(selector).all()) {
+          const box = await element.boundingBox()
+          expect(box!.x).toBeGreaterThanOrEqual(0)
+          expect(box!.x + box!.width).toBeLessThanOrEqual(width)
+          if (height >= 568) expect(box!.y + box!.height).toBeLessThanOrEqual(height)
+          if (selector === '.mm-tuner-string') { expect(box!.width).toBeGreaterThanOrEqual(44); expect(box!.height).toBeGreaterThanOrEqual(44) }
+        }
+      }
+      expect(await page.locator('main').evaluate(element => element.scrollWidth <= element.clientWidth + 1)).toBe(true)
+    }
+    expect(await page.evaluate(() => window.tunerTest.calls)).toBe(0)
+    await page.screenshot({ path: testInfo.outputPath(`tuner-${width}-${height}.png`), fullPage: true })
+    await page.getByRole('button', { name: '← Back', exact: true }).click()
+    await expect(page).toHaveURL(/#\/library/)
+    await expect(page.getByRole('navigation', { name: 'Main navigation' })).toBeVisible()
+  })
+}
+
+test('only Guitar and Ukulele remain; a saved Low-G preference migrates to standard ukulele', async ({ page }) => {
+  await microphone(page)
+  await page.addInitScript(() => localStorage.setItem('mm:tuner-preset', 'ukulele-low-g'))
+  await page.setViewportSize({ width: 375, height: 667 })
+  await page.goto('/#/tuner')
+  const instruments = page.getByRole('group', { name: 'Instrument', exact: true })
+  await expect(instruments.getByRole('button')).toHaveText(['Guitar', 'Ukulele'])
+  await expect(instruments.getByRole('button', { name: 'Ukulele', exact: true })).toHaveAttribute('aria-pressed', 'true')
+  await expect(page.getByRole('button', { name: /^(High G|Low G)$/ })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: /^String 4 G4/ })).toBeVisible()
+  await expect.poll(() => page.evaluate(() => localStorage.getItem('mm:tuner-preset'))).toBe('ukulele')
+  await page.getByRole('button', { name: 'Tap to tune', exact: true }).click()
+  await page.evaluate(() => window.tunerTest.frequency(391.995436))
+  await expect(page.getByRole('button', { name: /^String 4 G4/ })).toHaveAttribute('data-tuned', 'true')
+  await chooseTunerPreset(page, 'guitar')
+  await expect(page.locator('.mm-tuner-string')).toHaveCount(6)
+  await chooseTunerPreset(page, 'ukulele')
+  await expect(page.locator('.mm-tuner-string')).toHaveCount(4)
+  expect(await page.evaluate(() => window.tunerTest.calls)).toBe(1)
+})

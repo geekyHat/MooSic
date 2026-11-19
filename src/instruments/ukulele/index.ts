@@ -6,13 +6,13 @@ Position,
 import manifest from './plugin.json'
 
 /**
- * Soprano ukulele (gCEA).
+ * Low-G ukulele (G3 C4 E4 A4).
  * This is the contract test for the instrument plugin system:
  * it must work with zero changes to the core or to other plugins.
  */
 const ukulele: Instrument = {
   id: 'ukulele',
-  name: { en: 'Ukulele (4-string, gCEA)', it: 'Ukulele (4 corde, gCEA)' },
+  name: { en: 'Ukulele (4-string, low G)', it: 'Ukulele (4 corde, Sol basso)' },
   strings: [
     { id: 1, label: 'A', openMidi: 69, noteName: 'A4' },
     { id: 2, label: 'E', openMidi: 64, noteName: 'E4' },

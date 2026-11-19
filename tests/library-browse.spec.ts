@@ -114,7 +114,7 @@ test('OLGA documents appear in the TAB and chords indexes without losing their o
   await expect(names(page)).toHaveText(['Zeta acoustic'])
   await alphabet(page).getByRole('button',{name:'Z',exact:true}).click()
   await page.locator('.mm-song').getByRole('button',{name:'Open',exact:true}).click()
-  await expect(page.getByLabel('OLGA document',{exact:true})).toHaveText(original)
+  await expect(page.getByLabel('Original OLGA source',{exact:true})).toHaveText(original)
 })
 
 test('a 30000-document OLGA catalog stays paged while A–Z reaches artists, titles and originals',async({page},testInfo)=>{

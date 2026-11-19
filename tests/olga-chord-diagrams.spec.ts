@@ -38,7 +38,7 @@ for (const width of [1440, 320]) test(`OLGA uses source definitions and catalogu
   await expect(page.getByRole('img', { name: 'Bm7', exact: true })).toHaveAttribute('data-frets', 'x 2 4 4 3 2')
   await expect(page.getByRole('img', { name: 'Amaj9', exact: true })).toHaveAttribute('data-frets', 'x 0 2 1 0 0')
   const document = page.getByLabel('OLGA document', { exact: true })
-  expect(await document.textContent()).toBe(source)
+  expect(await page.getByLabel('Original OLGA source', { exact: true }).textContent()).toBe(source)
   const layout = await page.locator('.mm-reading-column').evaluate(element => {
     const main = element.closest('main')!, parent = main.getBoundingClientRect(), rect = element.getBoundingClientRect()
     return { width: rect.width, centerDelta: Math.abs(rect.left + rect.width / 2 - parent.left - main.clientWidth / 2) }
@@ -46,10 +46,10 @@ for (const width of [1440, 320]) test(`OLGA uses source definitions and catalogu
   expect(layout.width).toBeLessThanOrEqual(896)
   expect(layout.centerDelta).toBeLessThanOrEqual(1)
   expect(await page.locator('main').evaluate(element => element.scrollWidth <= element.clientWidth)).toBe(true)
-  expect(await document.evaluate(element => element.scrollWidth > element.clientWidth)).toBe(true)
+  expect(await document.evaluate(element => element.scrollWidth <= element.clientWidth + 1)).toBe(true)
   await page.screenshot({ path: testInfo.outputPath(`defined-chords-${width}.png`) })
   await page.getByRole('button', { name: '▶ Autoscroll', exact: true }).click()
   await expect.poll(() => page.locator('main').evaluate(element => element.scrollTop)).toBeGreaterThan(10)
   await page.getByRole('button', { name: '⏸ Pause autoscroll', exact: true }).click()
-  expect(await document.textContent()).toBe(source)
+  expect(await page.getByLabel('Original OLGA source', { exact: true }).textContent()).toBe(source)
 })

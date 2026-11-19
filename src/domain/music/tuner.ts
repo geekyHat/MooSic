@@ -7,7 +7,26 @@ export const GUITAR_STRINGS = [
   { number: 2, note: 'B', octave: 3, solfege: 'Si', frequency: 246.941651 },
   { number: 1, note: 'E', octave: 4, solfege: 'Mi', frequency: 329.627557 },
 ] as const
-export type GuitarString = typeof GUITAR_STRINGS[number]
+export interface TuningString { number: number; note: string; octave: number; solfege: string; frequency: number }
+export type GuitarString = TuningString
+export const UKULELE_STRINGS: readonly TuningString[] = [
+  { number: 4, note: 'G', octave: 4, solfege: 'Sol', frequency: 440 * 2 ** ((67 - 69) / 12) },
+  { number: 3, note: 'C', octave: 4, solfege: 'Do', frequency: 440 * 2 ** ((60 - 69) / 12) },
+  { number: 2, note: 'E', octave: 4, solfege: 'Mi', frequency: 440 * 2 ** ((64 - 69) / 12) },
+  { number: 1, note: 'A', octave: 4, solfege: 'La', frequency: 440 },
+]
+/** Tuner presets use conventional string numbers, independently of plugin IDs.
+ * High-G is re-entrant: physical string order is not ascending pitch. */
+export const TUNING_PRESETS = {
+  guitar: { strings: GUITAR_STRINGS, name: { en: 'Guitar · Standard', it: 'Chitarra · Standard' } },
+  ukulele: { strings: UKULELE_STRINGS, name: { en: 'Ukulele', it: 'Ukulele' } },
+} as const
+export type TuningPresetId = keyof typeof TUNING_PRESETS
+export function tuningPresetId(value: unknown): TuningPresetId {
+  // Preserve the instrument choice when migrating the removed tuning preference.
+  if (value === 'ukulele-low-g') return 'ukulele'
+  return typeof value === 'string' && Object.hasOwn(TUNING_PRESETS, value) ? value as TuningPresetId : 'guitar'
+}
 export type TuningDirection = 'low' | 'high' | 'tuned'
 export const TUNING_TOLERANCE = 10
 export const TUNER_RANGE = 250
@@ -17,17 +36,22 @@ export const centsBetween = (frequency: number, target: number) => 1200 * Math.l
 /** A small exit margin prevents flickering at the edge of the green zone. */
 export const tuningDirection = (cents: number, previous: TuningDirection | null = null): TuningDirection => Math.abs(cents) <= (previous === 'tuned' ? 14 : TUNING_TOLERANCE) ? 'tuned' : cents < 0 ? 'low' : 'high'
 export function closestGuitarString(frequency: number): GuitarString {
-  return GUITAR_STRINGS.reduce((best, string) => Math.abs(centsBetween(frequency, string.frequency)) < Math.abs(centsBetween(frequency, best.frequency)) ? string : best)
+  return closestString(frequency, GUITAR_STRINGS)
+}
+export function closestString(frequency: number, strings: readonly TuningString[]): TuningString {
+  return strings.reduce((best, string) => Math.abs(centsBetween(frequency, string.frequency)) < Math.abs(centsBetween(frequency, best.frequency)) ? string : best)
 }
 
 /** Prefer the existing string until another is decisively closer (40 cents
  * beyond the midpoint), so tuning near a boundary cannot alternate targets.
  */
 export class AutomaticStringTracker {
-  private target: GuitarString | null = null
+  private readonly strings: readonly TuningString[]
+  constructor(strings: readonly TuningString[] = GUITAR_STRINGS) { this.strings = strings }
+  private target: TuningString | null = null
   update(frequency: number | null): GuitarString | null {
     if (frequency === null) return this.target = null
-    const nearest = closestGuitarString(frequency)
+    const nearest = closestString(frequency, this.strings)
     if (!this.target || Math.abs(centsBetween(frequency, this.target.frequency)) - Math.abs(centsBetween(frequency, nearest.frequency)) > 80) this.target = nearest
     return this.target
   }

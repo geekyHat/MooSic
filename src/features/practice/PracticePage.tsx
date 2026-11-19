@@ -11,7 +11,7 @@ import { TransposeControls } from './components/TransposeControls'
 import { ChordDiagrams } from './components/ChordDiagrams'
 import { ChordSheet } from './components/ChordSheet'
 import { DisplayTabs } from './components/DisplayTabs'
-import { InlineChordDocument } from './components/InlineChordDocument'
+import { ResponsiveDocument } from './components/ResponsiveDocument'
 import { PieceSummary } from './components/PieceSummary'
 import { useScoreRenderer } from './hooks/useScoreRenderer'
 import { useTranspose } from './hooks/useTranspose'
@@ -39,14 +39,14 @@ function OlgaDocument({ core, scrollContainer }: PracticeProps) {
   return <section className="mm-reading-column mx-auto w-full min-w-0 max-w-4xl" aria-label="OLGA">
     <h2>{piece.title}</h2>
     <p>{piece.composer} · {piece.document?.instrument} · {piece.document?.format.toUpperCase()}</p>
-    <p className="text-sm text-muted">{it ? 'Usa lo scorrimento automatico per leggere al tuo ritmo. Gli accordi nel formato [Am] sono riconosciuti; TAB e testo conservano l’impaginazione originale.' : 'Use autoscroll to read at your own pace. Chords in [Am] format are recognized; TAB and text retain their original layout.'}</p>
+    <p className="text-sm text-muted">{it ? 'Usa lo scorrimento automatico per leggere al tuo ritmo. Gli accordi nel formato [Am] sono riconosciuti; testo e TAB si adattano alla larghezza dello schermo.' : 'Use autoscroll to read at your own pace. Chords in [Am] format are recognized; text and TAB adapt to the screen width.'}</p>
     <details><summary>{it ? 'Percorso nell’archivio' : 'Archive path'}</summary><p className="break-all">{piece.document?.path}</p></details>
     <PracticeToolbar key={piece.id + source.format} container={scrollContainer} t={core.t} disabled={source.format !== 'olga'}>
       {chords.length > 0 && <TransposeControls value={transpose} t={core.t}/>}
     </PracticeToolbar>
     {chords.length > 0 && <p className="mb-3 text-xs text-muted">{core.t('practice.transposeScope')}</p>}
     {core.instrument?.capabilities?.diagrams && chords.length > 0 && <ChordDiagrams t={core.t} selectionKey={transpose.semitones} chords={names.map(name => transposeChord(name, transpose.semitones))} definitions={diagramDefinitions} preferLibrary={transpose.semitones !== 0} instrument={core.instrument} unavailableLabel={core.t('practice.chordUnavailable')}/>}
-    {source.format === 'olga-reference' ? <p role="status">{it ? 'Caricamento documento…' : 'Loading document…'}</p> : source.format === 'olga-error' ? <p role="alert">{source.text}</p> : <pre tabIndex={0} aria-label={it ? 'Documento OLGA' : 'OLGA document'} className="mt-4 max-w-full overflow-x-auto rounded-xl border border-line bg-panel p-3 text-sm leading-relaxed" style={{ whiteSpace: 'pre', tabSize: 8 }}><InlineChordDocument source={source.text} chords={chords} semitones={transpose.semitones}/></pre>}
+    {source.format === 'olga-reference' ? <p role="status">{it ? 'Caricamento documento…' : 'Loading document…'}</p> : source.format === 'olga-error' ? <p role="alert">{source.text}</p> : <ResponsiveDocument source={source.text} chords={chords} semitones={transpose.semitones} it={it}/>}
   </section>
 }
 
@@ -69,7 +69,7 @@ function MusicalPractice({ core, scrollContainer, display:requestedDisplay, onDi
   useEffect(() => { setDisplay(defaultDisplay) }, [piece])
   if (!piece) return <p className="text-muted">{t('practice.select')}</p>
   if (!instrument) return <p className="text-muted">{t('library.empty')}</p>
-  return <div className="mm-practice-view mm-reading-column mx-auto flex min-h-full w-full max-w-4xl flex-col">
+  return <div className="mm-practice-view mm-reading-column mx-auto flex min-w-0 min-h-full w-full max-w-4xl flex-col">
     <PieceSummary piece={piece} instrument={instrument} locale={core.locale} t={t}/>
     <ArrangementSelector version={core.currentVersion} selected={core.currentArrangement} onChange={kind => onArrangementChange ? onArrangementChange(kind) : core.setArrangement(kind)} t={t}/>
     <DisplayTabs available={available} selected={selected} onChange={onDisplayChange ?? setDisplay} t={t}/>
