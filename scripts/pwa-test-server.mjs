@@ -19,5 +19,14 @@ createServer(async(req,res)=>{
  let file=decodeURIComponent(url.pathname.slice('/MooSic/'.length))||'index.html'
  if(file.split('/').includes('..')){res.writeHead(400);res.end();return}
  if(fault&&file.endsWith(fault.path)){const corrupt=fault.corrupt;fault=null;res.writeHead(corrupt?200:503,{'Content-Type':'text/javascript'});res.end('intentionally incomplete test response');return}
- try{const bytes=await readFile(path.join('.qa/pwa',version,file));res.writeHead(200,{'Content-Type':types[path.extname(file)]??'application/octet-stream','Cache-Control':'no-store',...(encodedLanguages&&file.endsWith('.traineddata.gz')?{'Content-Encoding':'gzip'}:{})});res.end(bytes)}catch{res.writeHead(404);res.end()}
+ try{let bytes=await readFile(path.join('.qa/pwa',version,file))
+  // Simulate slow mobile offline-storage checks without slowing navigation or
+  // changing the production worker. Metadata-only requests must stay cheap.
+  if(file==='sw.js')bytes=Buffer.from(bytes.toString().replace("const run=async()=>{",`const run=async()=>{
+    if(type==='TEST_SLOW_STATUS'){self.slowStatus=true;self.ignoreVersion=event.data.ignoreVersion;port.postMessage({ok:true});return}
+    if(type==='VERSION'&&self.ignoreVersion)return
+    if(type==='STATUS'&&self.slowStatus&&!event.data.metadataOnly)await new Promise(resolve=>setTimeout(resolve,25000))
+  `))
+  res.writeHead(200,{'Content-Type':types[path.extname(file)]??'application/octet-stream','Cache-Control':'no-store',...(encodedLanguages&&file.endsWith('.traineddata.gz')?{'Content-Encoding':'gzip'}:{})});res.end(bytes)
+ }catch{res.writeHead(404);res.end()}
 }).listen(5207,'127.0.0.1')

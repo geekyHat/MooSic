@@ -75,6 +75,8 @@ Use fresh artifact and runtime directories for each run. `--network=host` is spe
 
 PWA fixtures publish distinct application versions 1.1.1 and 1.1.2 with the same commit/build ID, covering repeated publications of one commit as well as normal version changes. Update tests assert the actually running version after activation (hiding the banner alone is insufficient), an active-worker activation request, missed controllerchange, timeout/unlock/retry, persistence and a cold offline reopen. Unit tests verify monotonic Pages versions and rerun stability. LocalSend tests cover OLGA-only totals, empty transfers, explicit duplicate-only results, hidden content activation and tampered source SHA-256 before writes. The full-backup validation/rollback tests remain applicable to both buffered ZIPs and the library merge.
 
+Mobile update regressions also delay the old worker's full offline-status checks by 25 seconds, exercise clients using the older status protocol, and place an old HTML entry page in the new release's cache. They verify successful activation and the actual new page version, banner removal, library preservation and subsequent offline reload. Only the test server injects the storage delay; production workers are built without test commands.
+
 For a large private backup, keep the archive outside Git and test its counts, merge, reload and library visibility in an independent mobile-profile browser. Do not commit personal archives or their song texts. Mobile emulation is not a physical Android performance guarantee.
 
 

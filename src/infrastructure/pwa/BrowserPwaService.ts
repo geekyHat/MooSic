@@ -30,13 +30,13 @@ export class BrowserPwaService extends ObservableStore<PwaSnapshot> implements P
     }
   }
   private patch(value:Partial<PwaSnapshot>){this.publish({...this.getSnapshot(),...value})}
-  private message(worker:ServiceWorker,type:string,timeout=10000):Promise<Reply>{
+  private message(worker:ServiceWorker,type:string,timeout=10000,metadataOnly=false):Promise<Reply>{
     return new Promise((resolve,reject)=>{
       const channel=new MessageChannel()
       const finish=(error?:unknown,value?:Reply)=>{clearTimeout(timer);channel.port1.close();channel.port2.close();if(error)reject(error);else resolve(value!)}
       const timer=setTimeout(()=>finish(new Error('timeout')),timeout)
       channel.port1.onmessage=event=>finish(undefined,event.data as Reply)
-      try{worker.postMessage({type},[channel.port2])}catch(error){finish(error)}
+      try{worker.postMessage({type,metadataOnly},[channel.port2])}catch(error){finish(error)}
     })
   }
   private endHandoff(){
@@ -53,9 +53,9 @@ export class BrowserPwaService extends ObservableStore<PwaSnapshot> implements P
       void this.refresh().catch(()=>{})
     },20000)
   }
-  private async controllerStatus(){
+  private async controllerStatus(metadataOnly=true){
     const worker=navigator.serviceWorker.controller??this.registration?.active
-    return worker?this.message(worker,'STATUS'):null
+    return worker?this.message(worker,'STATUS',10000,metadataOnly):null
   }
   private async activationStatus(){
     // Poll registration state without messaging the old worker. Repeated STATUS
@@ -77,7 +77,7 @@ export class BrowserPwaService extends ObservableStore<PwaSnapshot> implements P
         try{sessionStorage.setItem(updateKey,JSON.stringify({build:value.appBuild,version:value.appVersion}))}catch{/* Version labels still verify the loaded release. */}
         location.reload();return
       }
-      this.patch({reloadRequired:different,coreReady:!!value.coreReady,ocrReady:!!value.ocrReady,version:value.version??'',ocrBytes:value.ocrBytes??0})
+      this.patch({reloadRequired:different,version:value.version??''})
       if(different)this.patch({availableVersion:value.appVersion??'',availableBuild:value.appBuild??''})
       if(!different&&value.appBuild===__APP_BUILD__){
         try{const expected=JSON.parse(sessionStorage.getItem(updateKey)??'null');if(expected?.build===__APP_BUILD__&&expected?.version===__APP_VERSION__){sessionStorage.removeItem(updateKey);this.patch({updated:true,error:''})}}catch{/* Invalid session metadata does not affect the library. */}
@@ -85,17 +85,23 @@ export class BrowserPwaService extends ObservableStore<PwaSnapshot> implements P
     }catch{/* A temporarily restarting worker is retried until the handoff deadline. */}
     finally{this.reconciling=false}
   }
-  private async refresh(){
+  private async refresh(readiness=true){
     const registration=await navigator.serviceWorker.getRegistration(import.meta.env.BASE_URL)
     if(registration)this.registration=registration
     const waiting=this.registration?.waiting
     const ready=!!waiting&&waiting.state==='installed'
     this.patch({updateReady:ready})
     if(ready){
-      const value=await this.message(waiting,'STATUS')
+      const value=await this.message(waiting,'STATUS',10000,true)
       if(value.ok)this.patch({availableVersion:value.appVersion??'',availableBuild:value.appBuild??''})
     }else if(!this.getSnapshot().reloadRequired)this.patch({availableVersion:'',availableBuild:''})
     await this.reconcileController()
+    // File-by-file cache checks are unrelated to release identity. In
+    // particular, never let slow mobile storage delay an approved handoff.
+    if(readiness&&!this.reloading&&!this.getSnapshot().updating){
+      const value=await this.controllerStatus(false)
+      if(value?.ok)this.patch({coreReady:!!value.coreReady,ocrReady:!!value.ocrReady,ocrBytes:value.ocrBytes??0})
+    }
   }
   private incoming=(event:MessageEvent)=>{
     if(!(event.source instanceof ServiceWorker)||event.source.scriptURL!==new URL(`${import.meta.env.BASE_URL}sw.js`,location.href).href)return
@@ -173,7 +179,7 @@ export class BrowserPwaService extends ObservableStore<PwaSnapshot> implements P
   private async activate(){
     if(!this.canUpdate()||this.getSnapshot().downloading){this.patch({error:'busy-tabs'});return}
     try{
-      await this.refresh()
+      await this.refresh(false)
       const worker=this.registration?.waiting
       if(!worker){
         this.endHandoff();this.patch({updating:false,updateReady:false})

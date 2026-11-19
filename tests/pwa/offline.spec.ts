@@ -227,3 +227,66 @@ test('a stalled activation unlocks after its deadline and a retry safely complet
  await expect(page.getByLabel('Version in use',{exact:true})).toContainText('1.1.2',{timeout:30000})
  await expect(notice).toHaveCount(0)
 })
+
+test('mobile update completes while the old worker has slow offline storage checks',async({page,context})=>{
+ await page.setViewportSize({width:375,height:667})
+ await ready(page)
+ // Seed once, so an accidental storage wipe during reload cannot be masked.
+ await page.evaluate(song=>localStorage.setItem('mm:user-songs',JSON.stringify([song])),song)
+ await switchVersion(page,'b')
+ await page.getByRole('button',{name:'Check for updates',exact:true}).click()
+ const notice=page.getByRole('complementary',{name:'Update available',exact:true})
+ await expect(notice).toContainText('1.1.1 → 1.1.2',{timeout:30000})
+ await page.evaluate(()=>new Promise<void>(resolve=>{
+  const channel=new MessageChannel();channel.port1.onmessage=()=>{channel.port1.close();resolve()}
+  navigator.serviceWorker.controller!.postMessage({type:'TEST_SLOW_STATUS'},[channel.port2])
+ }))
+ await notice.getByRole('button',{name:'Install update',exact:true}).click()
+ await expect(page.getByLabel('Version in use',{exact:true})).toContainText('1.1.2',{timeout:15000})
+ await expect(notice).toHaveCount(0)
+ await context.setOffline(true);await page.reload()
+ await expect(page.getByLabel('Version in use',{exact:true})).toContainText('1.1.2')
+ expect(await page.evaluate(()=>JSON.parse(localStorage.getItem('mm:user-songs')??'[]'))).toEqual([song])
+})
+
+test('the new worker also activates for older clients that request full offline status',async({page})=>{
+ await page.addInitScript(()=>{
+  const send=ServiceWorker.prototype.postMessage
+  ServiceWorker.prototype.postMessage=function(message:unknown,options?:Transferable[]|StructuredSerializeOptions){
+   // Released clients do not send metadataOnly. Keep the actual worker,
+   // activation events and cache reads real while exercising that protocol.
+   const value=message&&typeof message==='object'?{...message,metadataOnly:false}:message
+   Reflect.apply(send,this,[value,options??[]])
+  }
+ })
+ await ready(page);await switchVersion(page,'b')
+ await page.getByRole('button',{name:'Check for updates',exact:true}).click()
+ const notice=page.getByRole('complementary',{name:'Update available',exact:true})
+ await expect(notice).toContainText('1.1.1 → 1.1.2',{timeout:30000})
+ await page.evaluate(()=>new Promise<void>(resolve=>{
+  const channel=new MessageChannel();channel.port1.onmessage=()=>{channel.port1.close();resolve()}
+  navigator.serviceWorker.controller!.postMessage({type:'TEST_SLOW_STATUS',ignoreVersion:true},[channel.port2])
+ }))
+ await notice.getByRole('button',{name:'Install update',exact:true}).click()
+ await expect(page.getByLabel('Version in use',{exact:true})).toContainText('1.1.2',{timeout:35000})
+ await expect(notice).toHaveCount(0)
+})
+
+test('a stale cached entry page is repaired instead of repeating the update prompt',async({page,context})=>{
+ await ready(page)
+ const previous=await page.evaluate(async()=>await (await fetch('index.html')).text())
+ await switchVersion(page,'b');await page.getByRole('button',{name:'Check for updates',exact:true}).click()
+ const notice=page.getByRole('complementary',{name:'Update available',exact:true})
+ await expect(notice).toContainText('1.1.1 → 1.1.2',{timeout:30000})
+ const inventory=await (await page.request.get(base+'offline-inventory.json')).json()
+ await page.evaluate(async({version,html})=>{
+  const key=(await caches.keys()).find(key=>key.endsWith(version))!
+  await (await caches.open(key)).put('/MooSic/index.html',new Response(html,{headers:{'Content-Type':'text/html'}}))
+ },{version:inventory.version,html:previous})
+ await notice.getByRole('button',{name:'Install update',exact:true}).click()
+ await expect(page.getByLabel('Version in use',{exact:true})).toContainText('1.1.2',{timeout:15000})
+ await expect(notice).toHaveCount(0)
+ await context.setOffline(true);await page.reload()
+ await expect(page.getByLabel('Version in use',{exact:true})).toContainText('1.1.2')
+ await expect(notice).toHaveCount(0)
+})

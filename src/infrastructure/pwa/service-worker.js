@@ -54,7 +54,16 @@ self.addEventListener('fetch',event=>{
   const request=event.request,url=new URL(request.url)
   if(request.method!=='GET'||url.origin!==self.location.origin||!url.pathname.startsWith(scopeURL.pathname))return
   if(request.mode==='navigate') {
-    event.respondWith((async()=>await (await caches.open(cacheName)).match(config.base+'index.html')||fetch(request))())
+    event.respondWith((async()=>{
+      const cache=await caches.open(cacheName),file=inventory.get(new URL(config.base+'index.html',self.location.origin).href)
+      const cached=await cache.match(file.url)
+      // A mixed/stale entry page loads the previous JavaScript and repeats the
+      // update banner even though this worker has already activated.
+      if(cached&&await matchesDigest(cached,file))return cached
+      const response=await verifiedResponse(file)
+      await cache.put(file.url,response.clone())
+      return response
+    })())
     return
   }
   url.search='';url.hash=''
@@ -83,12 +92,16 @@ async function activeVersion(){
   return new Promise(resolve=>{
     const channel=new MessageChannel(),timer=setTimeout(()=>{channel.port1.close();resolve(null)},3000)
     channel.port1.onmessage=event=>{clearTimeout(timer);channel.port1.close();resolve(event.data?.version)}
-    active.postMessage({type:'STATUS'},[channel.port2])
+    // Older workers may ignore VERSION. Its timeout must still permit their
+    // replacement, without starting expensive legacy STATUS cache checks.
+    active.postMessage({type:'VERSION'},[channel.port2])
   })
 }
 async function activateUpdate() {
   // A stale waiting-worker reference can already be active when this request
   // arrives. Freezing clients then waiting for another controllerchange hangs.
+  // Do not send STATUS to the old worker: its offline storage checks can keep
+  // its message event alive and block activation past the mobile timeout.
   if(await activeVersion()===config.version)return {ok:true,alreadyActive:true}
 
   const clients=await allClients(),allowed=await Promise.all(clients.map(canUpdate))
@@ -107,7 +120,8 @@ self.addEventListener('message',event=>{
   if(!port)return
   const run=async()=>{
     try {
-      if(type==='STATUS')port.postMessage({ok:true,version:config.version,appVersion:config.appVersion,appBuild:config.appBuild,coreReady:await complete(config.core),ocrReady:await complete(config.ocr),ocrBytes:config.ocr.reduce((sum,file)=>sum+file.bytes,0)})
+      if(type==='VERSION')port.postMessage({ok:true,version:config.version})
+      if(type==='STATUS')port.postMessage({ok:true,version:config.version,appVersion:config.appVersion,appBuild:config.appBuild,...(event.data.metadataOnly?{}:{coreReady:await complete(config.core),ocrReady:await complete(config.ocr),ocrBytes:config.ocr.reduce((sum,file)=>sum+file.bytes,0)})})
       if(type==='DOWNLOAD_OCR') {
         if(!downloading)downloading=download(config.ocr,progress=>{void announce({type:'OCR_PROGRESS',...progress})}).finally(()=>{downloading=null})
         await downloading;await (await caches.open(cacheName)).put(packMarker,new Response('ready'));port.postMessage({ok:true})
